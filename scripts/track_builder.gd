@@ -32,9 +32,9 @@ func _mat(color: Color, roughness := 0.88, metallic := 0.0) -> StandardMaterial3
 func _textured_mat(color: Color, roughness: float, _frequency: float, texture_kind: String = "concrete") -> StandardMaterial3D:
 	var material := _mat(color, roughness)
 	var base_path := "res://assets/textures/%s_" % texture_kind
-	var albedo := load(base_path + "albedo.png") as Texture2D
-	var rough_map := load(base_path + "roughness.png") as Texture2D
-	var normal_map := load(base_path + "normal.png") as Texture2D
+	var albedo: Texture2D = load(base_path + "albedo.png") as Texture2D if ResourceLoader.exists(base_path + "albedo.png") else null
+	var rough_map: Texture2D = load(base_path + "roughness.png") as Texture2D if ResourceLoader.exists(base_path + "roughness.png") else null
+	var normal_map: Texture2D = load(base_path + "normal.png") as Texture2D if ResourceLoader.exists(base_path + "normal.png") else null
 	if albedo:
 		material.albedo_texture = albedo
 		material.albedo_color = color.lightened(0.45)
@@ -43,7 +43,7 @@ func _textured_mat(color: Color, roughness: float, _frequency: float, texture_ki
 		material.normal_enabled = true
 		material.normal_texture = normal_map
 		material.normal_scale = 0.32
-	var ao_map := load(base_path + "ao.png") as Texture2D
+	var ao_map: Texture2D = load(base_path + "ao.png") as Texture2D if ResourceLoader.exists(base_path + "ao.png") else null
 	if ao_map:
 		material.ao_enabled = true
 		material.ao_texture = ao_map

@@ -5,7 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum RaceState { ready, running, paused, crashed, finished }
 enum RaceEnvironment { neonCity, desert, countryside, midnight }
-enum MenuPage { home, garage, environments, career }
+enum MenuPage { home, garage, environments, career, modes }
+enum RaceMode { solo, versusComputer, online }
+enum AiDifficulty { rookie, pro, elite }
 
 class RaceCar {
   const RaceCar({
@@ -40,9 +42,28 @@ class TrafficCar {
   final Color color;
 }
 
+class RivalCar {
+  RivalCar({required this.name, required this.lane, required this.pace, required this.color});
+  final String name;
+  double lane;
+  final double pace;
+  final Color color;
+  double progress = 0;
+  double laneTimer = 0;
+}
+
 class RacerGame extends FlameGame {
   final math.Random _random = math.Random();
   final List<TrafficCar> traffic = [];
+  final List<RivalCar> rivals = [];
+  RaceMode raceMode = RaceMode.solo;
+  AiDifficulty aiDifficulty = AiDifficulty.pro;
+  double onlineOpponentProgress = 0;
+  double onlineOpponentLane = 0;
+  String onlineOpponentName = 'Rival';
+  bool onlineOpponentConnected = false;
+  double _networkTimer = 0;
+  double _driftTime = 0;
   final ValueNotifier<int> hudNotifier = ValueNotifier<int>(0);
 
   RaceState state = RaceState.ready;
@@ -114,6 +135,16 @@ class RacerGame extends FlameGame {
     return true;
   }
 
+  void chooseDifficulty(AiDifficulty value) {
+    aiDifficulty = value;
+    hudNotifier.value++;
+  }
+
+  void chooseRaceMode(RaceMode value) {
+    raceMode = value;
+    hudNotifier.value++;
+  }
+
   void chooseEnvironment(RaceEnvironment value) {
     environment = value;
     hudNotifier.value++;
@@ -121,6 +152,18 @@ class RacerGame extends FlameGame {
 
   void startRace() {
     traffic.clear();
+    rivals.clear();
+    onlineOpponentProgress = 0;
+    onlineOpponentLane = 0;
+    onlineOpponentConnected = raceMode == RaceMode.online && onlineOpponentConnected;
+    if (raceMode == RaceMode.versusComputer) {
+      final base = switch (aiDifficulty) { AiDifficulty.rookie => .78, AiDifficulty.pro => .91, AiDifficulty.elite => 1.02 };
+      rivals.addAll([
+        RivalCar(name: 'NOVA', lane: -0.65, pace: base * .94, color: const Color(0xFFFFB547)),
+        RivalCar(name: 'VIPER', lane: 0.0, pace: base, color: const Color(0xFFB66BFF)),
+        RivalCar(name: 'GHOST', lane: 0.65, pace: base * 1.04, color: const Color(0xFFFF5364)),
+      ]);
+    }
     playerLane = 0;
     speed = 0;
     distance = 0;
@@ -133,6 +176,7 @@ class RacerGame extends FlameGame {
     nitroHeld = false;
     drifting = false;
     lastReward = 0;
+    _driftTime = 0;
     state = RaceState.running;
     overlays.remove('start');
     overlays.remove('gameOver');
@@ -189,9 +233,32 @@ class RacerGame extends FlameGame {
     }
     final cap = selectedCar.topSpeed * (boost ? 1.22 : 1.0);
     speed = speed.clamp(0.0, cap).toDouble();
+    if (driftHeld && speed > .25) _driftTime += dt;
     if (speed > .04) {
       distance += dt * speed * 110;
       roadOffset = (roadOffset + dt * speed * (drifting ? 2.2 : 1.8)) % 1;
+    }
+    final playerProgress = (distance / _raceTarget).clamp(0.0, 1.0).toDouble();
+    for (final rival in rivals) {
+      rival.progress += dt * rival.pace * (.075 + speed * .012);
+      rival.laneTimer += dt;
+      if (rival.laneTimer > 1.8 + _random.nextDouble() * 2.4) {
+        rival.laneTimer = 0;
+        rival.lane = (_random.nextInt(3) - 1) * .62;
+      }
+    }
+    if (raceMode == RaceMode.versusComputer && rivals.any((rival) => rival.progress >= 1)) {
+      _finishRace(won: false);
+      return;
+    }
+    if (raceMode == RaceMode.online && onlineOpponentConnected && onlineOpponentProgress >= 1 && playerProgress < 1) {
+      _finishRace(won: false);
+      return;
+    }
+    _networkTimer += dt;
+    if (raceMode == RaceMode.online && _networkTimer >= .08) {
+      _networkTimer = 0;
+      multiplayerClient?.sendState(progress: playerProgress, lane: playerLane, speed: speed);
     }
     spawnTimer += dt;
     if (speed > .12 && spawnTimer > (.95 - speed * .28)) {
@@ -216,11 +283,20 @@ class RacerGame extends FlameGame {
 
   double get _raceTarget => 900 + (level - 1) * 125;
 
+  @override
+  void onRemove() {
+    hudNotifier.dispose();
+    multiplayerClient?.close();
+    super.onRemove();
+  }
+
+  dynamic multiplayerClient;
+
   void _finishRace({required bool won}) {
     if (state != RaceState.running) return;
     state = won ? RaceState.finished : RaceState.crashed;
     bestDistance = math.max(bestDistance, distance.round()).toInt();
-    lastReward = won ? 120 + level * 30 + (drifting ? 25 : 0) : (distance / 30).floor();
+    lastReward = won ? 120 + level * 30 + (_driftTime > 1 ? 25 : 0) : (distance / 30).floor();
     coins += lastReward;
     if (won) {
       racesWon++;
@@ -281,6 +357,15 @@ class RacerGame extends FlameGame {
           Rect.fromCenter(center: Offset(x, y), width: 2 + t * 4, height: 5 + t * 25),
           const Radius.circular(4)), Paint()..color = Colors.white.withOpacity(.18 + t * .45));
       }
+    }
+    final playerProgress = (distance / _raceTarget).clamp(0.0, 1.0).toDouble();
+    for (final rival in rivals) {
+      final depth = (.72 - (rival.progress - playerProgress) * .50).clamp(.12, .84).toDouble();
+      _drawCar(canvas, w, h, rival.lane, depth, rival.color, false);
+    }
+    if (raceMode == RaceMode.online && onlineOpponentConnected) {
+      final depth = (.72 - (onlineOpponentProgress - playerProgress) * .50).clamp(.12, .84).toDouble();
+      _drawCar(canvas, w, h, onlineOpponentLane, depth, const Color(0xFFFFB547), false);
     }
     final sorted = [...traffic]..sort((a, b) => a.depth.compareTo(b.depth));
     for (final car in sorted) {

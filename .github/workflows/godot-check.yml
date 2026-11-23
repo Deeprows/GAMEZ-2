@@ -25,6 +25,6 @@ jobs:
           chmod +x Godot_v4.3-stable_linux.x86_64
           echo "$PWD" >> "$GITHUB_PATH"
       - name: Validate project import and GDScript
-        run: godot --headless --editor --path godot --quit
+        run: ./Godot_v4.3-stable_linux.x86_64 --headless --editor --path godot --quit
       - name: Run project in headless mode
-        run: timeout 20s godot --headless --path godot --quit-after 5
+        run: timeout 20s ./Godot_v4.3-stable_linux.x86_64 --headless --path godot --quit-after 5

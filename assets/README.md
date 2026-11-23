@@ -1,16 +1,21 @@
 # Godot 3D assets
 
-The source upgrade archive contains four GLB car models and 16 PBR PNG maps. The archive's binary files could not be committed through the current GitHub file-write connection, so this folder is intentionally a placeholder until those binary assets are uploaded.
+The four supplied GLB car models and all sixteen PBR PNG texture maps are now committed on the `godot-3d-engine-upgrade` branch.
 
-Copy the files from the first upgrade ZIP to these exact paths:
+## Car models
+- `cars/street_gt.glb`
+- `cars/hyper_x.glb`
+- `cars/muscle_v8.glb`
+- `cars/rally_rs.glb`
 
-- cars/street_gt.glb
-- cars/hyper_x.glb
-- cars/muscle_v8.glb
-- cars/rally_rs.glb
-- textures/asphalt_{albedo,roughness,normal,ao}.png
-- textures/grass_{albedo,roughness,normal,ao}.png
-- textures/sand_{albedo,roughness,normal,ao}.png
-- textures/concrete_{albedo,roughness,normal,ao}.png
+## PBR textures
+Each material has albedo, ambient-occlusion (AO), normal, and roughness maps:
+- `textures/asphalt_*.png`
+- `textures/concrete_*.png`
+- `textures/grass_*.png`
+- `textures/sand_*.png`
 
-The game scripts have procedural car visuals as a fallback when the GLBs are absent. The texture loader also falls back to solid materials when PNG maps are absent.
+The Godot scripts load these assets when available and retain procedural fallbacks for missing resources. Open the root `project.godot` in Godot 4.3 or newer to import the GLB and texture resources.
+
+## Validation status
+GitHub confirms all 20 binary assets are present. The project has not yet been opened in the Godot editor or run/exported, so import, gameplay, physics, touch controls, and Android export still require testing.

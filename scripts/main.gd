@@ -135,7 +135,7 @@ func _process(delta: float) -> void:
 	for rival in opponents:
 		if rival is AIRacer:
 			rival.advance(delta, angle / TAU)
-			var rival_total := float(rival.completed_laps) + rival.race_progress
+			var rival_total: float = float(rival.completed_laps) + float(rival.race_progress)
 			if rival_total > float(lap_count) + angle / TAU: ahead += 1
 	race_position = ahead + 1
 	if network and network.connected:

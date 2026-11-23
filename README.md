@@ -29,11 +29,13 @@ This branch adds the Godot 4 real-time 3D racing engine from the supplied migrat
 - Escape: pause
 - Touchscreen: on-screen steering, brake, drift and nitro buttons
 
-## Required asset upload still pending
+## Supplied assets
 
-The ZIP includes four GLB models and sixteen PBR texture PNGs. The current GitHub connection can commit UTF-8 source files but does not expose a binary-file upload operation, so those binary assets have **not** yet been committed. The game scripts now check whether those assets exist and use procedural car/material fallbacks if they do not.
+All 20 binary assets from the supplied upgrade ZIP are present on this branch and were verified on GitHub:
+- 4 GLB car models in `assets/cars/`
+- 16 PBR PNG maps (albedo, roughness, normal and AO for asphalt, concrete, grass and sand) in `assets/textures/`
 
-Copy the files from the supplied first upgrade ZIP into the exact paths documented in [assets/README.md](assets/README.md). Once uploaded, the car catalogue and PBR materials will load the supplied models and textures.
+See [assets/README.md](assets/README.md) for the exact inventory. Procedural car and material fallbacks remain in place if an asset cannot be loaded.
 
 ## Multiplayer server
 
@@ -45,7 +47,7 @@ Install Godot export templates, configure the Android SDK/JDK in Editor Settings
 
 ## Validation status
 
-This branch is a source integration, not a verified Android release. Godot is not installed in the current execution environment, so the editor parser, desktop runtime, physics tuning, touch layout, GLB import and Android export have not been run here. Validate those in Godot 4.3+ before merging.
+This branch is a source integration, not a verified Android release. Godot is not installed in the current execution environment, so the editor parser, desktop runtime, physics tuning, touch layout, GLB import and Android export have not been run here. No Godot CI run has been recorded yet. Validate those in Godot 4.3+ before merging.
 
 ## Original Flutter project
 

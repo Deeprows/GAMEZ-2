@@ -92,8 +92,13 @@ jobs:
         run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --editor --path . --quit
 
       - name: Export Android debug APK
+        env:
+          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: ${{ runner.temp }}/debug.keystore
+          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
+          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
         run: |
           mkdir -p build
+          cp "$HOME/.android/debug.keystore" "$RUNNER_TEMP/debug.keystore"
           /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --verbose --path . --export-debug "Android" build/NeonVelocity-debug.apk
           test -s build/NeonVelocity-debug.apk
 

@@ -41,7 +41,7 @@ func build(car_id: String, paint: Color) -> PlayerVehicle:
 	chassis.shape = shape
 	chassis.position.y = 0.48
 	add_child(chassis)
-	var packed := load(str(spec.model)) as PackedScene
+	var packed: PackedScene = load(str(spec.model)) as PackedScene if ResourceLoader.exists(str(spec.model)) else null
 	if packed:
 		var model := packed.instantiate()
 		model.name = "OptimizedGLBVehicle"

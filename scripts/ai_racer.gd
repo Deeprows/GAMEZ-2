@@ -21,7 +21,8 @@ func setup(index: int, progress: float, difficulty: int = 1) -> void:
 	lane_target = lane_offset
 	driver_name = ["Apex", "Vortex", "Nitro", "Shadow", "Blaze"][index % 5]
 	model_id = ["blaze", "phantom", "volt"][index % 3]
-	var model := load(Catalog.get_car(model_id).model) as PackedScene
+	var model_path: String = Catalog.get_car(model_id).model
+	var model: PackedScene = load(model_path) as PackedScene if ResourceLoader.exists(model_path) else null
 	if model:
 		var visual := model.instantiate()
 		add_child(visual)

@@ -43,7 +43,10 @@ class StartOverlay extends StatelessWidget {
     color: const Color(0xE8070B16),
     alignment: Alignment.center,
     padding: const EdgeInsets.all(22),
-    child: SafeArea(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+    child: SafeArea(child: SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
       const Icon(Icons.sports_motorsports_rounded, color: _cyan, size: 52),
       const SizedBox(height: 10),
       const Text('NEON VELOCITY', textAlign: TextAlign.center,
@@ -71,7 +74,7 @@ class StartOverlay extends StatelessWidget {
         textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, color: Colors.white54, letterSpacing: 1.1)),
       const SizedBox(height: 12),
       const Text('STEER  •  DRIFT  •  TURBO  •  WIN', style: TextStyle(fontSize: 9, color: _cyan, letterSpacing: 2)),
-    ])),
+    ]))),
   );
 
   Widget _garage(BuildContext context) => _shell(

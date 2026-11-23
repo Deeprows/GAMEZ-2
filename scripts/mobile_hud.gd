@@ -84,12 +84,13 @@ func _build_race_hud() -> void:
 	left.add_child(_hold_button("◀", "left", Vector2(82, 78)))
 	left.add_child(_hold_button("▶", "right", Vector2(82, 78)))
 	var right := HBoxContainer.new()
-	right.anchor_left = 0.64
+	right.anchor_left = 0.53
 	right.anchor_top = 0.77
 	right.anchor_right = 0.98
 	right.anchor_bottom = 0.97
 	right.alignment = BoxContainer.ALIGNMENT_END
 	gameplay_root.add_child(right)
+	right.add_child(_hold_button("GO", "accelerate", Vector2(82, 78)))
 	right.add_child(_hold_button("DRIFT", "drift", Vector2(82, 78)))
 	right.add_child(_hold_button("BRAKE", "brake", Vector2(82, 78)))
 	right.add_child(_hold_button("N₂O", "nitro", Vector2(82, 78)))
@@ -122,10 +123,10 @@ func _build_race_hud() -> void:
 
 func _build_garage() -> void:
 	garage_panel = PanelContainer.new()
-	garage_panel.anchor_left = 0.18
-	garage_panel.anchor_top = 0.10
-	garage_panel.anchor_right = 0.82
-	garage_panel.anchor_bottom = 0.90
+	garage_panel.anchor_left = 0.06
+	garage_panel.anchor_top = 0.06
+	garage_panel.anchor_right = 0.94
+	garage_panel.anchor_bottom = 0.94
 	garage_panel.visible = false
 	garage_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.015, 0.035, 0.06, 0.97)))
 	root.add_child(garage_panel)
@@ -137,10 +138,10 @@ func _build_menu() -> void:
 	menu_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	root.add_child(menu_overlay)
 	menu_card = PanelContainer.new()
-	menu_card.anchor_left = 0.19
-	menu_card.anchor_top = 0.08
-	menu_card.anchor_right = 0.81
-	menu_card.anchor_bottom = 0.92
+	menu_card.anchor_left = 0.06
+	menu_card.anchor_top = 0.06
+	menu_card.anchor_right = 0.94
+	menu_card.anchor_bottom = 0.94
 	menu_card.add_theme_stylebox_override("panel", _panel_style(Color(0.025, 0.055, 0.10, 0.98)))
 	menu_overlay.add_child(menu_card)
 	var scroll := ScrollContainer.new()

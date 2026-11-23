@@ -35,6 +35,10 @@ var last_track_angle := 0.0
 var total_laps := 2
 var race_position := 1
 var ai_difficulty := 1
+var online_opponent_progress := 0.0
+var online_opponent_lane := 0.0
+var online_opponent_name := "Rival"
+var online_opponent_connected := false
 
 func _ready() -> void:
 	garage = GarageScript.new()
@@ -137,11 +141,17 @@ func _process(delta: float) -> void:
 	var ahead := 0
 	for rival in opponents:
 		if rival is AIRacer:
-			rival.advance(delta, angle / TAU)
+				rival.advance(delta, angle / TAU)
 			var rival_total: float = float(rival.completed_laps) + float(rival.race_progress)
 			if rival_total > float(lap_count) + angle / TAU:
 				ahead += 1
+	if race_mode == "online" and online_opponent_connected and online_opponent_progress > player_progress:
+		ahead += 1
 	race_position = ahead + 1
+	if race_mode == "online" and online_opponent_connected and online_opponent_progress >= 1.0 and player_progress < 1.0:
+		race_position = 2
+		finish_race(false)
+		return
 	if network and network.connected:
 		network.send_state(clampf(player_progress, 0.0, 1.0), player.global_position.x / 10.0, player.linear_velocity.length() / 85.0)
 
@@ -204,6 +214,8 @@ func return_to_menu() -> void:
 	player.freeze = true
 	if network and network.connected:
 		network.disconnect_from_server()
+	online_opponent_connected = false
+	online_opponent_progress = 0.0
 	hud.show_main_menu()
 
 func finish_race(crashed: bool = false) -> void:
@@ -223,6 +235,8 @@ func finish_race(crashed: bool = false) -> void:
 			reward += 25
 		if player.damage < 0.10:
 			reward += 40
+	if network and network.connected:
+		network.send_finish()
 	if won:
 		wins += 1
 		career_level += 1
@@ -284,7 +298,7 @@ func garage_buy_or_select(car_id: String) -> bool:
 	return ok
 
 func set_race_mode(mode: String) -> void:
-	race_mode = "freeDrive" if mode == "freeDrive" else "versusComputer"
+	race_mode = mode if mode in ["freeDrive", "versusComputer", "online"] else "versusComputer"
 	if race_active:
 		_spawn_ai_racers()
 
@@ -294,8 +308,33 @@ func set_ai_difficulty(level: int) -> void:
 		_spawn_ai_racers()
 
 func connect_multiplayer(url: String, driver_name: String) -> void:
+	if url.strip_edges().is_empty():
+		hud.set_online_status("Enter your race server WebSocket URL first.")
+		return
 	if network:
 		network.disconnect_from_server()
 	network = RaceNetwork.new()
 	add_child(network)
-	network.connect_to_server(url, driver_name)
+	network.status_changed.connect(_on_network_status)
+	network.opponent_updated.connect(_on_opponent_updated)
+	race_mode = "online"
+	online_opponent_connected = false
+	online_opponent_progress = 0.0
+	hud.set_online_status("Connecting to race server…")
+	network.connect_to_server(url.strip_edges(), "Driver" if driver_name.strip_edges().is_empty() else driver_name.strip_edges())
+
+func _on_network_status(message: String) -> void:
+	hud.set_online_status(message)
+	if message.begins_with("Matched: "):
+		online_opponent_name = message.trim_prefix("Matched: ")
+		online_opponent_connected = true
+		race_mode = "online"
+		start_race()
+	elif message.begins_with("Disconnected") or message.begins_with("Opponent left"):
+		online_opponent_connected = false
+
+func _on_opponent_updated(progress: float, lane: float, _speed: float, display_name: String) -> void:
+	online_opponent_progress = clampf(progress, 0.0, 1.0)
+	online_opponent_lane = clampf(lane, -1.0, 1.0)
+	if not display_name.is_empty():
+		online_opponent_name = display_name

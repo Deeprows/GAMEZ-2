@@ -56,6 +56,8 @@ wss.on('connection', (socket) => {
         lane: Math.max(-1, Math.min(1, Number(message.lane) || 0)),
         speed: Math.max(0, Number(message.speed) || 0),
       });
+    } else if (message.type === 'finish' && socket.opponent) {
+      send(socket.opponent, { type: 'opponent_finished' });
     } else if (message.type === 'leave') {
       leaveRoom(socket);
     }

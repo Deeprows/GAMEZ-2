@@ -296,6 +296,7 @@ class RacerGame extends FlameGame {
   void _finishRace({required bool won}) {
     if (state != RaceState.running) return;
     state = won ? RaceState.finished : RaceState.crashed;
+    if (raceMode == RaceMode.online && won) multiplayerClient?.sendFinish();
     bestDistance = math.max(bestDistance, distance.round()).toInt();
     lastReward = won ? 120 + level * 30 + (_driftTime > 1 ? 25 : 0) : (distance / 30).floor();
     coins += lastReward;

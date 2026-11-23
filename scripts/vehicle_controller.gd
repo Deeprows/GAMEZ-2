@@ -48,6 +48,7 @@ func build(car_id: String, paint: Color) -> PlayerVehicle:
 		add_child(model)
 	else:
 		_add_body_mesh(paint)
+	_add_lights()
 	_add_wheel(Vector3(-0.92, 0.22, -1.28), true, true)
 	_add_wheel(Vector3(0.92, 0.22, -1.28), true, true)
 	_add_wheel(Vector3(-0.92, 0.22, 1.28), false, true)

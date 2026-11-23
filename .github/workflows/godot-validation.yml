@@ -37,7 +37,6 @@ jobs:
           mkdir -p /tmp/godot
           unzip -q /tmp/godot.zip -d /tmp/godot
           chmod +x /tmp/godot/Godot_v4.3-stable_linux.x86_64
-          echo "/tmp/godot/Godot_v4.3-stable_linux.x86_64" > /tmp/godot-bin-path
 
       - name: Verify supplied binary assets
         shell: bash
@@ -47,3 +46,6 @@ jobs:
 
       - name: Import project and validate GDScript
         run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --editor --path . --quit
+
+      - name: Run headless startup smoke test
+        run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --path . --quit-after 5

@@ -1,34 +1,36 @@
-# Neon Velocity — Flutter 3D-style Racing Game
+# Neon Velocity — Racing Championship
 
-A mobile-first arcade racer built with Flutter + Flame. The road uses a perspective renderer to create a 3D-style racing view without external 3D assets.
+A mobile-first Flutter + Flame arcade racer with a 3D-style perspective road and a full championship progression loop.
 
 ## Features
-- Perspective highway, neon skyline, road markings and glow effects
-- Three-lane steering, traffic cars and collision detection
-- Nitro boost with rechargeable meter
-- Speed/distance HUD, pause, crash screen and replay
-- No paid assets or API keys
+- **Car garage:** four selectable cars, unlock prices, colour identities and performance stats (top speed, acceleration, handling).
+- **Four environments:** Neon City, Desert Run, Green Valley and Midnight Circuit.
+- **Driving mechanics:** gas, brake, lane steering, drift, turbo boost, rechargeable nitro and speedometer HUD.
+- **Career mode:** championship levels, race wins, coin rewards, best distance and unlockable cars.
+- **Progress saved locally:** coins, level, selected/unlocked cars and records persist using SharedPreferences.
+- Pause, collision, race completion and replay flows.
 
-## Run locally
+## Run
 ```bash
-flutter create . --platforms=android
 flutter pub get
 flutter run
 ```
 
-## Build APK
+## Android release
 ```bash
 flutter build apk --release
 ```
 APK: `build/app/outputs/flutter-apk/app-release.apk`
 
 ## GitHub Actions
-Push to `main` or run **Build Android APK** manually. The workflow generates Android platform files if needed, runs `flutter analyze`, builds the release APK and uploads it as `neon-velocity-apk`.
+Push to `main` or manually run **Build Android APK**. The workflow creates Android platform files, installs packages, runs Dart analysis, builds a release APK and uploads the `neon-velocity-apk` artifact.
 
 ## Controls
-- Left/right: steer between lanes
-- Hold Nitro: temporary speed boost
-- Pause: pause/resume
+- LEFT / RIGHT: steer
+- GAS: accelerate
+- BRAKE: slow down
+- DRIFT: initiate drift and recharge turbo faster
+- TURBO: hold for a burst of speed
 
-## Technical note
-This is a 3D-style perspective racer rendered with Flutter Canvas and Flame, not a full polygonal 3D engine.
+## Rendering note
+The game uses Flame for the real-time game loop and Flutter Canvas for a lightweight perspective 3D-style renderer. The scenery and cars are procedural; no external assets or API keys are required.

@@ -1,13 +1,14 @@
 name: neon_velocity
-description: A polished pseudo-3D arcade car racing game built with Flutter and Flame.
+description: Neon Velocity arcade racing championship built with Flutter and Flame.
 publish_to: "none"
-version: 1.0.0+1
+version: 1.1.0+2
 environment:
   sdk: ">=3.3.0 <4.0.0"
 dependencies:
   flutter:
     sdk: flutter
   flame: ^1.21.0
+  shared_preferences: ^2.3.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

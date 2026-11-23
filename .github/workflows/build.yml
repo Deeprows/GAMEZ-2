@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: android-apk-${{ github.ref }}
@@ -18,6 +18,41 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Integrate uploaded Neon Velocity 2.0 rewrite
+        shell: bash
+        run: |
+          ARCHIVE="tool/GAMEZ-2-updated-files.zip"
+          if [ -f "$ARCHIVE" ]; then
+            WORK="$RUNNER_TEMP/gamez-v2"
+            PRESERVE="$RUNNER_TEMP/gamez-preserve"
+            mkdir -p "$WORK" "$PRESERVE"
+            # Keep the existing multiplayer transport and lobby UI intact.
+            if [ -f lib/game/multiplayer_client.dart ]; then
+              mkdir -p "$PRESERVE/lib/game"
+              cp lib/game/multiplayer_client.dart "$PRESERVE/lib/game/"
+            fi
+            if [ -f lib/ui/online_lobby_overlay.dart ]; then
+              mkdir -p "$PRESERVE/lib/ui"
+              cp lib/ui/online_lobby_overlay.dart "$PRESERVE/lib/ui/"
+            fi
+            unzip -q "$ARCHIVE" -d "$WORK"
+            cp -a "$WORK/." .
+            if [ -d "$PRESERVE/lib" ]; then
+              cp -a "$PRESERVE/lib/." lib/
+            fi
+            rm -f "$ARCHIVE"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A README.md pubspec.yaml lib test assets/audio tool/GAMEZ-2-updated-files.zip
+            if ! git diff --cached --quiet; then
+              git commit -m "Integrate Neon Velocity 2.0 rewrite"
+              git push origin "HEAD:${GITHUB_REF_NAME}"
+            fi
+          else
+            echo "No rewrite archive found; building current repository state."
+          fi
       - name: Set up Java
         uses: actions/setup-java@v4
         with:

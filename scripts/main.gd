@@ -51,7 +51,6 @@ func _ready() -> void:
 	player.rotation.y = PI
 	player.freeze = true
 	_setup_camera()
-	_spawn_ai_racers()
 	hud = MobileHUD.new()
 	add_child(hud)
 	hud.setup(self)
@@ -89,8 +88,9 @@ func _setup_camera() -> void:
 	camera.fov = 76
 	camera.near = 0.08
 	camera.far = 500
-	camera.position = Vector3(0, 4.1, 9.5)
+	camera.position = player.global_position + Vector3(0, 4.1, 9.5)
 	add_child(camera)
+	camera.look_at(player.global_position + Vector3(0, 0.5, -5.5), Vector3.UP)
 
 func _spawn_ai_racers() -> void:
 	for old_rival in opponents:
@@ -236,6 +236,7 @@ func finish_race(crashed: bool = false) -> void:
 
 func change_environment(id: int) -> void:
 	environment_id = clampi(id, 0, 3)
+	_save_progress()
 	get_tree().paused = false
 	get_tree().reload_current_scene()
 
@@ -249,6 +250,7 @@ func _load_progress() -> void:
 		wins = int(cfg.get_value("career", "wins", 0))
 		best_distance = int(cfg.get_value("career", "best_distance", 0))
 		best_lap = float(cfg.get_value("career", "best_lap", 0.0))
+		environment_id = clampi(int(cfg.get_value("career", "environment", environment_id)), 0, 3)
 		selected_car = str(cfg.get_value("garage", "selected", garage.selected_car))
 		garage.selected_car = selected_car
 
@@ -259,6 +261,7 @@ func _save_progress() -> void:
 	cfg.set_value("career", "wins", wins)
 	cfg.set_value("career", "best_distance", best_distance)
 	cfg.set_value("career", "best_lap", best_lap)
+	cfg.set_value("career", "environment", environment_id)
 	cfg.set_value("garage", "selected", garage.selected_car)
 	cfg.set_value("garage", "owned", Array(garage.owned))
 	cfg.save("user://career.cfg")
@@ -282,11 +285,13 @@ func garage_buy_or_select(car_id: String) -> bool:
 
 func set_race_mode(mode: String) -> void:
 	race_mode = "freeDrive" if mode == "freeDrive" else "versusComputer"
-	_spawn_ai_racers()
+	if race_active:
+		_spawn_ai_racers()
 
 func set_ai_difficulty(level: int) -> void:
 	ai_difficulty = clampi(level, 0, 2)
-	_spawn_ai_racers()
+	if race_active:
+		_spawn_ai_racers()
 
 func connect_multiplayer(url: String, driver_name: String) -> void:
 	if network:

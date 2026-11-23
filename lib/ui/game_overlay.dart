@@ -212,30 +212,57 @@ class StartOverlay extends StatelessWidget {
 
   Widget _modes(BuildContext context) => _shell(
     title: 'SELECT RACE MODE',
-    child: ListView(children: [
-      const Text('PICK YOUR CHALLENGE', style: TextStyle(color: Colors.white60, fontSize: 10, letterSpacing: 2)),
-      const SizedBox(height: 14),
-      _modeCard('FREE DRIVE', 'Practice the road, master the drift and test your car.', Icons.route_rounded, _cyan,
-        () { game.chooseRaceMode(RaceMode.solo); game.startRace(); }),
-      _modeCard('PLAYER VS COMPUTER', 'Race three AI drivers. Choose how aggressive they are.', Icons.smart_toy_rounded, const Color(0xFFFFB547),
-        () => _showAiDifficulty(context)),
-      _modeCard('ONLINE MULTIPLAYER', 'Join matchmaking and race another real player.', Icons.public_rounded, const Color(0xFFB66BFF),
-        () => game.overlays.add('onlineLobby')),
-      const SizedBox(height: 12),
-      Text('AI DIFFICULTY: ${game.aiDifficulty.name.toUpperCase()}', style: const TextStyle(color: Colors.white60, fontSize: 10, letterSpacing: 1.5)),
-      const SizedBox(height: 8),
-      Wrap(spacing: 8, children: [
+    child: Column(children: [
+      Expanded(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Expanded(child: _modeTile('FREE DRIVE', 'Explore and master the road.', Icons.route_rounded, _cyan,
+          () { game.chooseRaceMode(RaceMode.solo); game.startRace(); })),
+        const SizedBox(width: 8),
+        Expanded(child: _modeTile('PLAYER VS COMPUTER', 'Race three AI rivals.', Icons.smart_toy_rounded, const Color(0xFFFFB547),
+          () => _showAiDifficulty(context))),
+        const SizedBox(width: 8),
+        Expanded(child: _modeTile('ONLINE MULTIPLAYER', 'Race a real player.', Icons.public_rounded, const Color(0xFFB66BFF),
+          () => game.overlays.add('onlineLobby'))),
+      ])),
+      const SizedBox(height: 5),
+      Row(children: [
+        Text('AI: ${game.aiDifficulty.name.toUpperCase()}',
+          style: const TextStyle(color: Colors.white60, fontSize: 9, fontWeight: FontWeight.bold)),
+        const SizedBox(width: 7),
         for (final difficulty in AiDifficulty.values)
-          ChoiceChip(label: Text(difficulty.name.toUpperCase()),
+          Padding(padding: const EdgeInsets.only(right: 4), child: ChoiceChip(
+            visualDensity: VisualDensity.compact,
+            label: Text(difficulty.name.toUpperCase(), style: const TextStyle(fontSize: 8)),
             selected: game.aiDifficulty == difficulty,
-            onSelected: (_) => game.chooseDifficulty(difficulty)),
+            onSelected: (_) => game.chooseDifficulty(difficulty))),
+        const Spacer(),
+        SizedBox(height: 32, child: FilledButton.icon(
+          onPressed: () { game.chooseRaceMode(RaceMode.versusComputer); game.startRace(); },
+          icon: const Icon(Icons.flag_rounded, size: 14),
+          style: FilledButton.styleFrom(backgroundColor: _cyan, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 10)),
+          label: const Text('START AI RACE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900)),
+        )),
       ]),
-      const SizedBox(height: 10),
-      _bigButton('RACE AGAINST AI', Icons.flag_rounded, () {
-        game.chooseRaceMode(RaceMode.versusComputer);
-        game.startRace();
-      }),
     ]),
+  );
+
+  Widget _modeTile(String title, String subtitle, IconData icon, Color color, VoidCallback onTap) => InkWell(
+    onTap: onTap, borderRadius: BorderRadius.circular(13),
+    child: Container(
+      padding: const EdgeInsets.all(9),
+      decoration: BoxDecoration(color: color.withOpacity(.10), borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: color.withOpacity(.55))),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(icon, color: color, size: 25),
+        const SizedBox(height: 6),
+        Text(title, maxLines: 2, overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: .3)),
+        const SizedBox(height: 4),
+        Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 8, color: Colors.white60)),
+        const Spacer(),
+        Icon(Icons.arrow_forward_rounded, color: color, size: 15),
+      ]),
+    ),
   );
 
   void _showAiDifficulty(BuildContext context) {

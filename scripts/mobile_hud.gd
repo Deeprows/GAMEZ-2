@@ -140,9 +140,14 @@ func _build_menu() -> void:
 	menu_card.anchor_bottom = 0.92
 	menu_card.add_theme_stylebox_override("panel", _panel_style(Color(0.025, 0.055, 0.10, 0.98)))
 	menu_overlay.add_child(menu_card)
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	menu_card.add_child(scroll)
 	menu_content = VBoxContainer.new()
-	menu_content.add_theme_constant_override("separation", 12)
-	menu_card.add_child(menu_content)
+	menu_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	menu_content.add_theme_constant_override("separation", 10)
+	scroll.add_child(menu_content)
 
 func _show_menu_page(page: String) -> void:
 	for child in menu_content.get_children():

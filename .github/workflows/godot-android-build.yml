@@ -64,6 +64,11 @@ jobs:
           cp -a /tmp/godot-templates/templates/. "$HOME/.local/share/godot/export_templates/$GODOT_VERSION/"
           chmod +x /tmp/godot/Godot_v4.3-stable_linux.x86_64
 
+      - name: Prepare Godot cache directories
+        run: |
+          mkdir -p .godot/imported .godot/editor build
+          chmod -R u+rwX .godot build
+
       - name: Import project
         run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --editor --path . --quit
 

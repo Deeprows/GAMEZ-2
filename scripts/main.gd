@@ -2,7 +2,6 @@ extends Node3D
 
 const TrackBuilder = preload("res://scripts/track_builder.gd")
 const PlayerCar = preload("res://scripts/vehicle_controller.gd")
-const TrafficCar = preload("res://scripts/traffic_car.gd")
 const MobileHUD = preload("res://scripts/mobile_hud.gd")
 const RaceNetwork = preload("res://scripts/multiplayer_client.gd")
 const AIRacerScript = preload("res://scripts/ai_racer.gd")
@@ -10,7 +9,6 @@ const GarageScript = preload("res://scripts/garage_manager.gd")
 const Catalog = preload("res://scripts/car_catalog.gd")
 
 @export_enum("Neon City", "Desert Run", "Green Valley", "Midnight Circuit") var environment_id := 0
-@export var traffic_count := 8
 var track: Node3D
 var player: PlayerVehicle
 var camera: Camera3D
@@ -18,7 +16,7 @@ var hud: CanvasLayer
 var network
 var race_time := 0.0
 var race_distance := 0.0
-var race_active := true
+var race_active := false
 var nitro := 1.0
 var coins := 0
 var career_level := 1
@@ -37,9 +35,6 @@ var last_track_angle := 0.0
 var total_laps := 2
 var race_position := 1
 var ai_difficulty := 1
-var opponent_progress := 0.0
-var opponent_lane := 0.0
-var opponent_name := "Rival"
 
 func _ready() -> void:
 	garage = GarageScript.new()
@@ -54,6 +49,7 @@ func _ready() -> void:
 	add_child(player)
 	player.global_position = Vector3(34, 0.10, 0)
 	player.rotation.y = PI
+	player.freeze = true
 	_setup_camera()
 	_spawn_ai_racers()
 	hud = MobileHUD.new()
@@ -98,9 +94,11 @@ func _setup_camera() -> void:
 
 func _spawn_ai_racers() -> void:
 	for old_rival in opponents:
-		if is_instance_valid(old_rival): old_rival.queue_free()
+		if is_instance_valid(old_rival):
+			old_rival.queue_free()
 	opponents.clear()
-	if race_mode != "versusComputer": return
+	if race_mode != "versusComputer":
+		return
 	for i in range(3):
 		var rival := AIRacerScript.new()
 		add_child(rival)
@@ -108,13 +106,16 @@ func _spawn_ai_racers() -> void:
 		opponents.append(rival)
 
 func _process(delta: float) -> void:
-	if not race_active or player == null: return
+	if not race_active or player == null:
+		return
 	race_time += delta
 	lap_time += delta
-	if player.is_drifting: drift_time += delta
+	if player.is_drifting:
+		drift_time += delta
 	race_distance += maxf(player.linear_velocity.length(), 0.0) * delta
 	nitro = clampf(nitro + (0.055 if player.is_drifting else 0.018) * delta, 0.0, 1.0)
-	if player.is_boosting: nitro = maxf(0.0, nitro - 0.32 * delta)
+	if player.is_boosting:
+		nitro = maxf(0.0, nitro - 0.32 * delta)
 	if player.damage >= 1.0:
 		finish_race(true)
 		return
@@ -126,9 +127,11 @@ func _process(delta: float) -> void:
 	if last_track_angle > 5.2 and angle < 1.1:
 		lap_count += 1
 		last_lap_time = lap_time
-		if best_lap <= 0.0 or lap_time < best_lap: best_lap = lap_time
+		if best_lap <= 0.0 or lap_time < best_lap:
+			best_lap = lap_time
 		lap_time = 0.0
-		if lap_count >= total_laps: finish_race()
+		if lap_count >= total_laps:
+			finish_race()
 	last_track_angle = angle
 	var player_progress := (float(lap_count) + angle / TAU) / float(total_laps)
 	var ahead := 0
@@ -136,7 +139,8 @@ func _process(delta: float) -> void:
 		if rival is AIRacer:
 			rival.advance(delta, angle / TAU)
 			var rival_total: float = float(rival.completed_laps) + float(rival.race_progress)
-			if rival_total > float(lap_count) + angle / TAU: ahead += 1
+			if rival_total > float(lap_count) + angle / TAU:
+				ahead += 1
 	race_position = ahead + 1
 	if network and network.connected:
 		network.send_state(clampf(player_progress, 0.0, 1.0), player.global_position.x / 10.0, player.linear_velocity.length() / 85.0)
@@ -146,21 +150,67 @@ func _physics_process(_delta: float) -> void:
 		player.set_controls(Input.get_action_strength("steer_right") - Input.get_action_strength("steer_left"), Input.is_action_pressed("brake"), Input.is_action_pressed("nitro") and nitro > 0.02, Input.is_action_pressed("drift"))
 
 func set_touch_control(axis: String, pressed: bool) -> void:
-	if player == null: return
+	if player == null:
+		return
 	match axis:
-		"left": player.touch_steer = -1.0 if pressed else (0.0 if player.touch_steer < 0 else player.touch_steer)
-		"right": player.touch_steer = 1.0 if pressed else (0.0 if player.touch_steer > 0 else player.touch_steer)
-		"brake": player.touch_brake = pressed
-		"nitro": player.touch_nitro = pressed
-		"drift": player.touch_drift = pressed
+		"left":
+			player.touch_steer = -1.0 if pressed else (0.0 if player.touch_steer < 0 else player.touch_steer)
+		"right":
+			player.touch_steer = 1.0 if pressed else (0.0 if player.touch_steer > 0 else player.touch_steer)
+		"brake":
+			player.touch_brake = pressed
+		"nitro":
+			player.touch_nitro = pressed
+		"drift":
+			player.touch_drift = pressed
+
+func start_race() -> void:
+	get_tree().paused = false
+	race_active = true
+	race_time = 0.0
+	race_distance = 0.0
+	lap_time = 0.0
+	drift_time = 0.0
+	lap_count = 0
+	last_track_angle = 0.0
+	race_position = 1
+	nitro = 1.0
+	total_laps = clampi(2 + int((career_level - 1) / 2), 2, 6)
+	player.damage = 0.0
+	player.linear_velocity = Vector3.ZERO
+	player.angular_velocity = Vector3.ZERO
+	player.global_position = Vector3(34, 0.10, 0)
+	player.rotation = Vector3(0, PI, 0)
+	player.freeze = false
+	_spawn_ai_racers()
+	hud.show_race_hud()
 
 func pause_race() -> void:
-	race_active = not race_active
-	get_tree().paused = not race_active
+	if not race_active:
+		return
+	race_active = false
+	player.freeze = true
+	hud.show_pause_menu()
+
+func resume_race() -> void:
+	get_tree().paused = false
+	race_active = true
+	player.freeze = false
+	hud.show_race_hud()
+
+func return_to_menu() -> void:
+	get_tree().paused = false
+	race_active = false
+	player.freeze = true
+	if network and network.connected:
+		network.disconnect_from_server()
+	hud.show_main_menu()
 
 func finish_race(crashed: bool = false) -> void:
-	if not race_active: return
+	if not race_active:
+		return
 	race_active = false
+	player.freeze = true
 	var won := not crashed and (race_mode == "freeDrive" or race_position == 1)
 	var reward := 0
 	if crashed:
@@ -169,8 +219,10 @@ func finish_race(crashed: bool = false) -> void:
 		var base := 60 + career_level * 25
 		var multiplier := 1.0 if race_mode == "freeDrive" else (1.0 if race_position == 1 else (0.55 if race_position == 2 else (0.30 if race_position == 3 else 0.15)))
 		reward = int(round(float(base) * multiplier))
-		if drift_time > 3.0: reward += 25
-		if player.damage < 0.10: reward += 40
+		if drift_time > 3.0:
+			reward += 25
+		if player.damage < 0.10:
+			reward += 40
 	if won:
 		wins += 1
 		career_level += 1
@@ -184,6 +236,7 @@ func finish_race(crashed: bool = false) -> void:
 
 func change_environment(id: int) -> void:
 	environment_id = clampi(id, 0, 3)
+	get_tree().paused = false
 	get_tree().reload_current_scene()
 
 func _load_progress() -> void:
@@ -224,6 +277,7 @@ func garage_buy_or_select(car_id: String) -> bool:
 			add_child(player)
 			player.global_position = old_position
 			player.global_rotation = old_rotation
+			player.freeze = not race_active
 	return ok
 
 func set_race_mode(mode: String) -> void:
@@ -232,12 +286,11 @@ func set_race_mode(mode: String) -> void:
 
 func set_ai_difficulty(level: int) -> void:
 	ai_difficulty = clampi(level, 0, 2)
-	for rival in opponents:
-		if rival is AIRacer: rival.queue_free()
 	_spawn_ai_racers()
 
 func connect_multiplayer(url: String, driver_name: String) -> void:
-	if network: network.disconnect_from_server()
+	if network:
+		network.disconnect_from_server()
 	network = RaceNetwork.new()
 	add_child(network)
 	network.connect_to_server(url, driver_name)

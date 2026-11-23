@@ -43,6 +43,9 @@ class _OnlineLobbyOverlayState extends State<OnlineLobbyOverlay> {
             widget.game.onlineOpponentProgress = (message['progress'] as num? ?? 0).toDouble();
             widget.game.onlineOpponentLane = (message['lane'] as num? ?? 0).toDouble();
             widget.game.hudNotifier.value++;
+          } else if (type == 'opponent_finished') {
+            widget.game.onlineOpponentProgress = 1;
+            widget.game.hudNotifier.value++;
           } else if (type == 'opponent_left') {
             widget.game.onlineOpponentConnected = false;
             setState(() => _status = 'Your opponent disconnected.');

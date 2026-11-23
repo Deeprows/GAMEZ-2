@@ -195,7 +195,9 @@ func _add_tree(parent: Node3D, pos: Vector3, rng: RandomNumberGenerator, dark: b
 	parent.add_child(root)
 
 func _add_rock_or_palm(parent: Node3D, pos: Vector3, rng: RandomNumberGenerator, desert: bool) -> void:
-	if not desert: _add_tree(parent, pos, rng, false); return
+	if not desert:
+		_add_tree(parent, pos, rng, false)
+		return
 	var rock := MeshInstance3D.new()
 	var mesh := SphereMesh.new()
 	mesh.radius = rng.randf_range(0.7, 1.8)

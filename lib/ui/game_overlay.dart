@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../game/racer_game.dart';
-import '../game/multiplayer_client.dart';
 
 const _cyan = Color(0xFF00E5FF);
 const _panel = Color(0xEE10182B);
@@ -40,6 +39,15 @@ class GameHud extends StatelessWidget {
             const SizedBox(width: 8),
             Text('${(game.nitro * 100).round()}%', style: const TextStyle(fontSize: 10)),
           ]),
+          if (game.raceMode != RaceMode.solo) Padding(
+            padding: const EdgeInsets.only(top: 7),
+            child: Row(children: [
+              const Icon(Icons.flag_rounded, size: 13, color: Color(0xFFFFB547)),
+              const SizedBox(width: 6),
+              Text(game.raceMode == RaceMode.online ? 'ONLINE VS ${game.onlineOpponentName}' : '3 AI RIVALS  •  ${game.aiDifficulty.name.toUpperCase()}',
+                style: const TextStyle(fontSize: 9, letterSpacing: 1.1, color: Colors.white70, fontWeight: FontWeight.bold)),
+            ]),
+          ),
           const Spacer(),
           Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
             _holdButton(Icons.arrow_back_rounded, 'LEFT', () => game.steer(-.45)),
@@ -390,8 +398,8 @@ class GameOverOverlay extends StatelessWidget {
   Widget build(BuildContext context) => _messagePanel(
     title: game.state == RaceState.finished ? 'CHAMPION!' : 'RACE OVER',
     subtitle: game.state == RaceState.finished
-      ? 'Level cleared! +${game.lastReward} coins. Next championship unlocked.'
-      : 'Distance: ${game.distance.toInt()} m  •  Reward: +${game.lastReward} coins',
+      ? (game.raceMode == RaceMode.online ? 'You beat your online rival! +${game.lastReward} coins.' : 'Level cleared! +${game.lastReward} coins. Next championship unlocked.')
+      : (game.raceMode == RaceMode.versusComputer || game.raceMode == RaceMode.online ? 'Your rival took the win. Distance: ${game.distance.toInt()} m  •  +${game.lastReward} coins' : 'Distance: ${game.distance.toInt()} m  •  Reward: +${game.lastReward} coins'),
     button: 'NEXT RACE', onPressed: game.startRace,
     secondary: 'BACK TO GARAGE', onSecondary: () {
       game.state = RaceState.ready;

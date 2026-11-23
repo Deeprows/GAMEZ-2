@@ -9,7 +9,7 @@ import 'ui/online_lobby_overlay.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
   final game = RacerGame();
   await game.loadProgress();
   runApp(NeonVelocityApp(game: game));

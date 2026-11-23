@@ -57,7 +57,7 @@ class RacerGame extends FlameGame {
 
   void steer(double direction) {
     if (state == RaceState.running) {
-      playerLane = (playerLane + direction).clamp(-1.0, 1.0);
+      playerLane = (playerLane + direction).clamp(-1.0, 1.0).toDouble();
     }
   }
 
@@ -71,11 +71,11 @@ class RacerGame extends FlameGame {
 
     final boost = nitroHeld && nitro > .015;
     if (boost) {
-      nitro = (nitro - dt * .27).clamp(0.0, 1.0);
-      speed = (speed + dt * .45).clamp(.58, 1.0);
+      nitro = (nitro - dt * .27).clamp(0.0, 1.0).toDouble();
+      speed = (speed + dt * .45).clamp(.58, 1.0).toDouble();
     } else {
-      nitro = (nitro + dt * .075).clamp(0.0, 1.0);
-      speed = (speed - dt * .10).clamp(.58, .78);
+      nitro = (nitro + dt * .075).clamp(0.0, 1.0).toDouble();
+      speed = (speed - dt * .10).clamp(.58, .78).toDouble();
     }
 
     distance += dt * speed * 82;
@@ -195,11 +195,11 @@ class RacerGame extends FlameGame {
   }
 
   void _drawCar(Canvas canvas, double w, double h, double lane, double depth, Color color, bool player) {
-    final t = depth.clamp(0.0, 1.0);
+    final t = depth.clamp(0.0, 1.0).toDouble();
     final roadHalf = _half(t, w * .075, w * .49);
     final x = w / 2 + lane * roadHalf * .66;
     final y = _y(t, h * .39, h * 1.02);
-    final carW = (w * (.035 + t * .115)).clamp(16.0, w * .24);
+    final carW = (w * (.035 + t * .115)).clamp(16.0, w * .24).toDouble();
     final carH = carW * 1.55;
     final body = Rect.fromCenter(center: Offset(x, y), width: carW, height: carH);
 

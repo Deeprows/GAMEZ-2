@@ -13,6 +13,9 @@ var meta_label: Label
 var nitro_bar: ProgressBar
 var toast: Label
 var garage_panel: PanelContainer
+var online_url_input: LineEdit
+var online_name_input: LineEdit
+var online_status_label: Label
 const Catalog = preload("res://scripts/car_catalog.gd")
 
 func setup(owner_game: Node) -> void:
@@ -183,6 +186,20 @@ func _show_menu_page(page: String) -> void:
 			menu_content.add_child(_label("SELECT HOW YOU WANT TO DRIVE", 14, Color.WHITE))
 			_add_menu_button("FREE DRIVE", "Explore the circuit and earn rewards", func(): game.set_race_mode("freeDrive"); _show_menu_page("home"))
 			_add_menu_button("VS COMPUTER", "Race against three AI drivers", func(): game.set_race_mode("versusComputer"); _show_menu_page("home"))
+			_add_menu_button("ONLINE MULTIPLAYER", "Find another driver over the internet", func(): _show_menu_page("online"))
+		"online":
+			menu_content.add_child(_label("ONLINE MATCHMAKING", 17, Color("#c9a3ff")))
+			menu_content.add_child(_label("Enter the WebSocket URL of your deployed race server.", 11, Color.WHITE))
+			online_name_input = LineEdit.new()
+			online_name_input.placeholder_text = "Racer name"
+			online_name_input.text = "Driver"
+			menu_content.add_child(online_name_input)
+			online_url_input = LineEdit.new()
+			online_url_input.placeholder_text = "wss://your-game-server.onrender.com"
+			menu_content.add_child(online_url_input)
+			online_status_label = _label("Connect to matchmaking to find another driver.", 11, Color("#b8c9dc"))
+			menu_content.add_child(online_status_label)
+			_add_menu_button("FIND AN OPPONENT", "Connect and wait for matchmaking", func(): game.connect_multiplayer(online_url_input.text, online_name_input.text))
 		"settings":
 			menu_content.add_child(_label("AI OPPONENT DIFFICULTY", 14, Color.WHITE))
 			for i in range(3):
@@ -216,6 +233,10 @@ func _add_menu_button(caption: String, detail: String, callback: Callable) -> vo
 	button.pressed.connect(callback)
 	menu_content.add_child(button)
 	menu_content.add_child(_label(detail, 10, Color("#aab9ce")))
+
+func set_online_status(message: String) -> void:
+	if online_status_label and is_instance_valid(online_status_label):
+		online_status_label.text = message
 
 func show_main_menu() -> void:
 	garage_panel.visible = false

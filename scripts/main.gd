@@ -159,7 +159,7 @@ func _process(delta: float) -> void:
 
 func _physics_process(_delta: float) -> void:
 	if player and race_active:
-		player.set_controls(Input.get_action_strength("steer_right") - Input.get_action_strength("steer_left"), Input.is_action_pressed("brake"), Input.is_action_pressed("nitro") and nitro > 0.02, Input.is_action_pressed("drift"))
+		player.set_controls(Input.get_action_strength("steer_right") - Input.get_action_strength("steer_left"), Input.is_action_pressed("brake"), Input.is_action_pressed("nitro") and nitro > 0.02, Input.is_action_pressed("drift"), Input.is_action_pressed("accelerate") or player.touch_accelerate)
 
 func set_touch_control(axis: String, pressed: bool) -> void:
 	if player == null:
@@ -171,6 +171,8 @@ func set_touch_control(axis: String, pressed: bool) -> void:
 			player.touch_steer = 1.0 if pressed else (0.0 if player.touch_steer > 0 else player.touch_steer)
 		"brake":
 			player.touch_brake = pressed
+		"accelerate":
+			player.touch_accelerate = pressed
 		"nitro":
 			player.touch_nitro = pressed
 		"drift":

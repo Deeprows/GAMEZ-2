@@ -121,13 +121,13 @@ class RacerGame extends FlameGame {
     if (w <= 0 || h <= 0) return;
 
     canvas.drawRect(
-      Offset.zero & size,
+      Rect.fromLTWH(0, 0, w, h),
       Paint()
         ..shader = const LinearGradient(
           colors: [Color(0xFF080D25), Color(0xFF17254A), Color(0xFF101522)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-        ).createShader(Offset.zero & size),
+        ).createShader(Rect.fromLTWH(0, 0, w, h)),
     );
 
     final horizon = h * .39;

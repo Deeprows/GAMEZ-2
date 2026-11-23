@@ -2,6 +2,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'game/racer_game.dart';
 import 'ui/game_overlay.dart';
+import 'ui/online_lobby_overlay.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,7 @@ class NeonVelocityApp extends StatelessWidget {
           'pause': (context, game) => PauseOverlay(game: game),
           'gameOver': (context, game) => GameOverOverlay(game: game),
           'start': (context, game) => StartOverlay(game: game),
+          'onlineLobby': (context, game) => OnlineLobbyOverlay(game: game),
         },
         initialActiveOverlays: const ['hud', 'start'],
       ),

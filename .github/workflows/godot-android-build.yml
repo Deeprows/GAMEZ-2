@@ -45,7 +45,7 @@ jobs:
           fi
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          "$SDKMANAGER" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0" "cmdline-tools;latest" "cmake;3.10.2.4988404" "ndk;23.2.8568313"
 
       - name: Install Godot 4.3 and Android export templates
         shell: bash
@@ -94,7 +94,7 @@ jobs:
       - name: Export Android debug APK
         run: |
           mkdir -p build
-          /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --path . --export-debug "Android" build/NeonVelocity-debug.apk
+          /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --verbose --path . --export-debug "Android" build/NeonVelocity-debug.apk
           test -s build/NeonVelocity-debug.apk
 
       - name: Upload debug APK

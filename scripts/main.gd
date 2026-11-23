@@ -1,5 +1,7 @@
 extends Node3D
 
+# Primary Neon Velocity 3D game entry point.
+
 const TrackBuilder = preload("res://scripts/track_builder.gd")
 const PlayerCar = preload("res://scripts/vehicle_controller.gd")
 const MobileHUD = preload("res://scripts/mobile_hud.gd")

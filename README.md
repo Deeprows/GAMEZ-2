@@ -1,59 +1,52 @@
-# Neon Velocity — Racing Championship
+# GAMEZ-2 — Neon Velocity 3D (Godot 4 migration branch)
 
-A mobile-first Flutter + Flame arcade racer with a real pseudo-3D road engine (curves, hills, fog, traffic, lap racing) and a full championship progression loop.
+This branch adds the Godot 4 real-time 3D racing engine from the supplied migration and Milestone 2 ZIPs. The original Flutter + Flame project files remain in their existing locations on this branch; the `main` branch is unchanged and remains the rollback point.
 
-## What's new in 2.0
-- **Real road engine:** segment-based 3D road with curves, hills, fog, rumble strips, barriers, lap start/finish gantry and four unique closed-loop circuits.
-- **Real racing:** multi-lap races, race countdown, live position, lap timer and best lap, damage model, wall and car collisions, slipstream and near-miss nitro bonuses.
-- **Real traffic and rivals:** lane-changing traffic, rivals that avoid traffic, take racing lines and rubber-band by difficulty.
-- **Detailed cars:** six procedural car bodies with tail lights, brake lights, exhausts, boost flames, wings and underglow.
-- **Atmosphere:** parallax skylines/mountains, sun/moon/stars, speed lines, FOV kick on nitro, camera shake, tyre smoke, sparks.
-- **Sound:** engine that follows RPM and gears, crash, nitro, countdown and lap sounds (generated `assets/audio/*.wav`).
-- **HUD:** analogue speedometer with RPM arc and gear, nitro and damage bars, position and lap panel.
+## Open the Godot game
 
-## Features
-- **Car garage:** four selectable cars, unlock prices, colour identities and performance stats (top speed, acceleration, handling).
-- **Four environments:** Neon City, Desert Run, Green Valley and Midnight Circuit.
-- **Driving mechanics:** gas, brake, lane steering, drift, turbo boost, rechargeable nitro and speedometer HUD.
-- **Race modes:** free drive, three-rival AI races (Rookie / Pro / Elite), and real-time online 1v1 matchmaking.
-- **AI opponents:** three named rival drivers change lanes and race against your progress.
-- **Career mode:** championship levels, race wins, coin rewards, best distance and unlockable cars.
-- **Online multiplayer:** WebSocket matchmaking and live opponent position updates using the included Node.js server.
-- **Progress saved locally:** coins, level, selected/unlocked cars and records persist using SharedPreferences.
-- Pause, collision, race completion and replay flows.
+1. Install Godot 4.3 or newer.
+2. Open the repository root (the folder containing `project.godot`) in Godot Project Manager.
+3. Allow Godot to scan/import the project, then run `scenes/main.tscn` (F6) or the project (F5).
+4. The project uses the Compatibility renderer for broader mobile GPU support.
 
-## Run
-```bash
-flutter pub get
-flutter run
-```
+## Engine work included
 
-## Android release
-```bash
-flutter build apk --release
-```
-APK: `build/app/outputs/flutter-apk/app-release.apk`
-
-## GitHub Actions
-Push to `main` or manually run **Build Android APK**. The workflow creates Android platform files, installs packages, runs Dart analysis, builds a release APK and uploads the `neon-velocity-apk` artifact.
-
-## Online multiplayer server
-
-The online mode needs a deployed WebSocket server. This repository includes a lightweight matchmaking/state-relay server and a Render deployment blueprint (`render.yaml`).
-
-1. Deploy this repository as a Render web service, or run the server yourself with `npm install && npm start`.
-2. The server listens on the `PORT` environment variable (default `8080`).
-3. In the game, open **Race Modes → Online Multiplayer**, enter the server WebSocket URL (`wss://...` for a hosted service), choose a racer name and tap **Find an Opponent**.
-4. Keep two game clients connected to the same server to be paired. The server relays opponent position updates; it does not store accounts or rankings.
-
-For local testing, use `ws://10.0.2.2:8080` from the Android emulator or your computer's LAN address from a physical phone. Do not use `localhost` on a phone.
+- Physics-driven 3D player vehicle using `VehicleBody3D` and four `VehicleWheel3D` wheels.
+- Procedurally generated closed-loop 3D circuit, collision geometry, lane markings, curbs and barriers.
+- Four environment themes: Neon City, Desert Run, Green Valley and Midnight Circuit.
+- Mobile touch steering, brake, drift and nitro HUD; desktop keyboard controls.
+- Four-car garage catalogue with original Street R / Blaze GT / Phantom X / Volt RS names and 0 / 350 / 700 / 1100 coin prices.
+- Local career and garage persistence, race rewards and collision damage.
+- Three AI opponents with Rookie / Pro / Elite difficulty, lane changes and overtake behavior.
+- WebSocket client using the existing join/state/finish/leave message protocol.
 
 ## Controls
-- LEFT / RIGHT: steer (hold). Accelerator is automatic.
-- BRAKE: slow down
-- DRIFT: hold while steering to slide through corners and recharge nitro
-- NITRO: hold for a burst of speed
-- Keyboard: arrows / A D steer, S brake, Space nitro, Shift drift, P / Esc pause
 
-## Rendering note
-The game uses Flame for the real-time game loop and Flutter Canvas for a segment-projection pseudo-3D renderer. Cars, scenery and skies are procedural. Only the small WAV sound files in `assets/audio/` are bundled; no API keys are required.
+- A / Left and D / Right: steer
+- S / Down: brake
+- Space: nitro
+- Shift: drift
+- Escape: pause
+- Touchscreen: on-screen steering, brake, drift and nitro buttons
+
+## Required asset upload still pending
+
+The ZIP includes four GLB models and sixteen PBR texture PNGs. The current GitHub connection can commit UTF-8 source files but does not expose a binary-file upload operation, so those binary assets have **not** yet been committed. The game scripts now check whether those assets exist and use procedural car/material fallbacks if they do not.
+
+Copy the files from the supplied first upgrade ZIP into the exact paths documented in [assets/README.md](assets/README.md). Once uploaded, the car catalogue and PBR materials will load the supplied models and textures.
+
+## Multiplayer server
+
+The original Node.js server remains in the repository under `server/`. Set the multiplayer WebSocket URL in the game before connecting. The Godot client uses the same basic `join`, `state`, `finish` and `leave` message types, but an actual two-device connection test is still required.
+
+## Android export
+
+Install Godot export templates, configure the Android SDK/JDK in Editor Settings, add an Android export preset, then build a debug APK. Test on a physical Android device in landscape mode before release. Do not commit signing keys.
+
+## Validation status
+
+This branch is a source integration, not a verified Android release. Godot is not installed in the current execution environment, so the editor parser, desktop runtime, physics tuning, touch layout, GLB import and Android export have not been run here. Validate those in Godot 4.3+ before merging.
+
+## Original Flutter project
+
+The Flutter + Flame source remains available in the same repository tree and the original `main` branch remains untouched. This migration branch adds a Godot project at the repository root rather than deleting the previous implementation.

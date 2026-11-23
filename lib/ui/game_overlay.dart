@@ -1,102 +1,10 @@
 import 'package:flutter/material.dart';
+import '../game/car_painter.dart';
 import '../game/racer_game.dart';
+import 'hud.dart';
 
 const _cyan = Color(0xFF00E5FF);
 const _panel = Color(0xEE10182B);
-
-class GameHud extends StatelessWidget {
-  const GameHud({super.key, required this.game});
-  final RacerGame game;
-
-  @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-    animation: game.hudNotifier,
-    builder: (context, _) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-        child: Column(children: [
-          Row(children: [
-            _hudStat('DISTANCE', '${game.distance.toInt()} m'),
-            const Spacer(),
-            _hudStat('SPEED', '${(game.speed * 320).toInt()}'),
-            const SizedBox(width: 4),
-            const Text('KM/H', style: TextStyle(fontSize: 9, color: Colors.white60)),
-            const Spacer(),
-            _hudStat('LEVEL', '${game.level}'),
-            IconButton.filledTonal(onPressed: game.togglePause, icon: const Icon(Icons.pause_rounded)),
-          ]),
-          const SizedBox(height: 8),
-          Row(children: [
-            const Icon(Icons.bolt, color: _cyan, size: 17),
-            const SizedBox(width: 6),
-            const Text('TURBO', style: TextStyle(fontSize: 9, letterSpacing: 1.5)),
-            const SizedBox(width: 8),
-            Expanded(child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: LinearProgressIndicator(value: game.nitro, minHeight: 7,
-                backgroundColor: Colors.white24, valueColor: const AlwaysStoppedAnimation(_cyan)),
-            )),
-            const SizedBox(width: 8),
-            Text('${(game.nitro * 100).round()}%', style: const TextStyle(fontSize: 10)),
-          ]),
-          if (game.raceMode != RaceMode.solo) Padding(
-            padding: const EdgeInsets.only(top: 7),
-            child: Row(children: [
-              const Icon(Icons.flag_rounded, size: 13, color: Color(0xFFFFB547)),
-              const SizedBox(width: 6),
-              Text(game.raceMode == RaceMode.online ? 'ONLINE VS ${game.onlineOpponentName}' : '3 AI RIVALS  •  ${game.aiDifficulty.name.toUpperCase()}',
-                style: const TextStyle(fontSize: 9, letterSpacing: 1.1, color: Colors.white70, fontWeight: FontWeight.bold)),
-            ]),
-          ),
-          const Spacer(),
-          Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            _holdButton(Icons.arrow_back_rounded, 'LEFT', () => game.steer(-.45)),
-            const SizedBox(width: 8),
-            _holdButton(Icons.arrow_forward_rounded, 'RIGHT', () => game.steer(.45)),
-            const Spacer(),
-            Column(children: [
-              _holdButton(Icons.local_fire_department, 'TURBO', () => game.setNitro(true),
-                onUp: () => game.setNitro(false), color: const Color(0xFF00CDEB)),
-              const SizedBox(height: 8),
-              _holdButton(Icons.directions_car_filled, 'DRIFT', () => game.setDrift(true),
-                onUp: () => game.setDrift(false), color: const Color(0xFFB66BFF)),
-            ]),
-            const SizedBox(width: 8),
-            Column(children: [
-              _holdButton(Icons.keyboard_arrow_up_rounded, 'GAS', () => game.setThrottle(true),
-                onUp: () => game.setThrottle(false), color: const Color(0xFF42E695)),
-              const SizedBox(height: 8),
-              _holdButton(Icons.keyboard_arrow_down_rounded, 'BRAKE', () => game.setBrake(true),
-                onUp: () => game.setBrake(false), color: const Color(0xFFFF5B68)),
-            ]),
-          ]),
-        ]),
-      ),
-    ),
-  );
-
-  Widget _hudStat(String label, String value) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Text(label, style: const TextStyle(fontSize: 8, letterSpacing: 1.6, color: Colors.white60, fontWeight: FontWeight.bold)),
-    Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-  ]);
-}
-
-Widget _holdButton(IconData icon, String label, VoidCallback onDown,
-    {VoidCallback? onUp, Color color = Colors.white}) => GestureDetector(
-  onTap: onUp == null ? onDown : null,
-  onTapDown: onUp == null ? null : (_) => onDown(),
-  onTapUp: onUp == null ? null : (_) => onUp(),
-  onTapCancel: onUp,
-  child: Container(
-    width: 58, height: 58,
-    decoration: BoxDecoration(color: color.withOpacity(.16), borderRadius: BorderRadius.circular(17),
-      border: Border.all(color: color.withOpacity(.75)), boxShadow: [BoxShadow(color: color.withOpacity(.12), blurRadius: 12)]),
-    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Icon(icon, color: color, size: 22),
-      Text(label, style: TextStyle(fontSize: 7, letterSpacing: .8, fontWeight: FontWeight.w900, color: color)),
-    ]),
-  ),
-);
 
 class StartOverlay extends StatelessWidget {
   const StartOverlay({super.key, required this.game});
@@ -185,12 +93,12 @@ class StartOverlay extends StatelessWidget {
       decoration: BoxDecoration(color: _panel, borderRadius: BorderRadius.circular(18),
         border: Border.all(color: selected ? car.color : Colors.white12, width: selected ? 2 : 1)),
       child: Row(children: [
-        Container(width: 58, height: 58, decoration: BoxDecoration(color: car.color.withOpacity(.13), borderRadius: BorderRadius.circular(15)),
-          child: Icon(Icons.directions_car_filled_rounded, color: car.color, size: 37)),
+        CarPreview(car: car),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(car.name, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
-          const SizedBox(height: 7),
+          Text('${car.topKmh} km/h  •  0-100 in ${car.zeroTo100}s', style: const TextStyle(fontSize: 9, color: Colors.white54)),
+          const SizedBox(height: 5),
           _statBar('TOP SPEED', car.topSpeed, car.color),
           _statBar('ACCELERATION', car.acceleration, car.color),
           _statBar('HANDLING', car.handling, car.color),
@@ -332,7 +240,7 @@ class StartOverlay extends StatelessWidget {
           const Text('CHAMPIONSHIP PROGRESS', style: TextStyle(fontSize: 10, letterSpacing: 2, color: Colors.white70)),
           const SizedBox(height: 8),
           Text('LEVEL ${game.level}', style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900)),
-          Text('${game.racesWon} races won  •  Best distance ${game.bestDistance} m', style: const TextStyle(fontSize: 11, color: Colors.white70)),
+          Text('${game.racesWon} races won  •  Best lap ${formatTime(game.bestLap)}  •  ${game.bestDistance} m', style: const TextStyle(fontSize: 11, color: Colors.white70)),
         ]),
       ),
       const SizedBox(height: 14),
@@ -344,10 +252,11 @@ class StartOverlay extends StatelessWidget {
       const SizedBox(height: 18),
       const Text('RACE REWARDS', style: TextStyle(fontSize: 11, letterSpacing: 2, fontWeight: FontWeight.w900)),
       const SizedBox(height: 8),
-      _rewardRow('Finish a championship race', '120+ coins'),
-      _rewardRow('Higher championship levels', 'Bigger payouts'),
-      _rewardRow('Drift during your race', 'Bonus coins'),
-      _rewardRow('Unlock new cars', 'Improve your stats'),
+      _rewardRow('Win the race (1st place)', 'Full payout'),
+      _rewardRow('Podium finish (2nd / 3rd)', 'Reduced payout'),
+      _rewardRow('Clean race, under 10% damage', '+40 coins'),
+      _rewardRow('Long drifts', '+25 coins'),
+      _rewardRow('Higher levels = more laps', 'Bigger payouts'),
       const SizedBox(height: 16),
       _bigButton('RACE FOR REWARDS', Icons.flag, game.startRace),
     ]),
@@ -379,35 +288,69 @@ class PauseOverlay extends StatelessWidget {
   final RacerGame game;
   @override
   Widget build(BuildContext context) => _messagePanel(
-    title: 'RACE PAUSED', subtitle: 'Your championship run is waiting.',
+    title: 'RACE PAUSED', subtitle: 'Lap ${game.lap}/${game.laps}  •  ${formatTime(game.raceTime)}',
     button: 'RESUME RACE', onPressed: game.togglePause,
-    secondary: 'QUIT TO GARAGE', onSecondary: () {
-      game.state = RaceState.ready;
-      game.overlays.remove('pause');
-      game.overlays.add('start');
-      game.showPage(MenuPage.home);
-      game.resumeEngine();
-    },
+    secondary: 'QUIT TO GARAGE', onSecondary: game.returnToMenu,
   );
 }
 
 class GameOverOverlay extends StatelessWidget {
   const GameOverOverlay({super.key, required this.game});
   final RacerGame game;
+
   @override
-  Widget build(BuildContext context) => _messagePanel(
-    title: game.state == RaceState.finished ? 'CHAMPION!' : 'RACE OVER',
-    subtitle: game.state == RaceState.finished
-      ? (game.raceMode == RaceMode.online ? 'You beat your online rival! +${game.lastReward} coins.' : 'Level cleared! +${game.lastReward} coins. Next championship unlocked.')
-      : (game.raceMode == RaceMode.versusComputer || game.raceMode == RaceMode.online ? 'Your rival took the win. Distance: ${game.distance.toInt()} m  •  +${game.lastReward} coins' : 'Distance: ${game.distance.toInt()} m  •  Reward: +${game.lastReward} coins'),
-    button: 'NEXT RACE', onPressed: game.startRace,
-    secondary: 'BACK TO GARAGE', onSecondary: () {
-      game.state = RaceState.ready;
-      game.overlays.remove('gameOver');
-      game.overlays.add('start');
-      game.showPage(MenuPage.home);
-      game.resumeEngine();
-    },
+  Widget build(BuildContext context) {
+    final finished = game.state == RaceState.finished;
+    final versus = game.raceMode != RaceMode.solo;
+    final title = !finished
+        ? (game.finishReason == 'WRECKED' ? 'WRECKED' : 'RACE OVER')
+        : (!versus ? 'RACE COMPLETE' : (game.lastPosition == 1 ? 'VICTORY!' : '${ordinal(game.lastPosition)} PLACE'));
+    final color = finished && game.lastWon ? const Color(0xFF42E695) : (finished ? _cyan : const Color(0xFFFF5B68));
+    return Container(
+      color: const Color(0xEE070B16),
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(26),
+      child: SafeArea(child: SingleChildScrollView(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(finished ? Icons.emoji_events_rounded : Icons.car_crash_rounded, color: color, size: 56),
+        const SizedBox(height: 12),
+        Text(title, textAlign: TextAlign.center, style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 2, color: color, shadows: [Shadow(color: color, blurRadius: 18)])),
+        const SizedBox(height: 6),
+        Text(finished ? (game.lastWon && versus ? 'Championship level ${game.level} unlocked' : 'Finish line crossed') : game.finishReason,
+          style: const TextStyle(color: Colors.white60, fontSize: 11, letterSpacing: 1.5)),
+        const SizedBox(height: 20),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: _panel, borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.white12)),
+          child: Column(children: [
+            _resultRow('RACE TIME', formatTime(game.lastRaceTime)),
+            _resultRow('BEST LAP', formatTime(game.bestLap)),
+            _resultRow('DISTANCE', '${game.distance.toInt()} m'),
+            _resultRow('CAR DAMAGE', '${(game.damage * 100).round()}%'),
+            const Divider(color: Colors.white12, height: 22),
+            for (final note in game.rewardNotes) _resultRow(note.split('  ').first, note.contains('  ') ? note.split('  ').last : '', gold: true),
+            const SizedBox(height: 4),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              const Text('TOTAL REWARD', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2, fontSize: 12)),
+              Text('+${game.lastReward} 🪙', style: const TextStyle(color: Color(0xFFFFD447), fontWeight: FontWeight.w900, fontSize: 20)),
+            ]),
+          ]),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(width: 260, height: 52, child: FilledButton(onPressed: game.startRace,
+          style: FilledButton.styleFrom(backgroundColor: _cyan, foregroundColor: Colors.black),
+          child: const Text('NEXT RACE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)))),
+        const SizedBox(height: 10),
+        TextButton(onPressed: game.returnToMenu, child: const Text('BACK TO GARAGE', style: TextStyle(color: Colors.white70))),
+      ]))),
+    );
+  }
+
+  Widget _resultRow(String label, String value, {bool gold = false}) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      Text(label, style: const TextStyle(fontSize: 11, color: Colors.white60, letterSpacing: .8)),
+      Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: gold ? const Color(0xFFFFD447) : Colors.white)),
+    ]),
   );
 }
 

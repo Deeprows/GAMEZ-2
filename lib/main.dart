@@ -1,11 +1,15 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'game/racer_game.dart';
 import 'ui/game_overlay.dart';
+import 'ui/hud.dart';
 import 'ui/online_lobby_overlay.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final game = RacerGame();
   await game.loadProgress();
   runApp(NeonVelocityApp(game: game));
@@ -24,16 +28,20 @@ class NeonVelocityApp extends StatelessWidget {
       colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF00E5FF), brightness: Brightness.dark),
     ),
     home: Scaffold(
-      body: GameWidget<RacerGame>(
-        game: game,
-        overlayBuilderMap: {
-          'hud': (context, game) => GameHud(game: game),
-          'pause': (context, game) => PauseOverlay(game: game),
-          'gameOver': (context, game) => GameOverOverlay(game: game),
-          'start': (context, game) => StartOverlay(game: game),
-          'onlineLobby': (context, game) => OnlineLobbyOverlay(game: game),
-        },
-        initialActiveOverlays: const ['hud', 'start'],
+      body: Focus(
+        autofocus: true,
+        onKeyEvent: (node, event) => game.handleKey(event) ? KeyEventResult.handled : KeyEventResult.ignored,
+        child: GameWidget<RacerGame>(
+          game: game,
+          overlayBuilderMap: {
+            'hud': (context, game) => GameHud(game: game),
+            'pause': (context, game) => PauseOverlay(game: game),
+            'gameOver': (context, game) => GameOverOverlay(game: game),
+            'start': (context, game) => StartOverlay(game: game),
+            'onlineLobby': (context, game) => OnlineLobbyOverlay(game: game),
+          },
+          initialActiveOverlays: const ['hud', 'start'],
+        ),
       ),
     ),
   );

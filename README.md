@@ -1,6 +1,15 @@
 # Neon Velocity — Racing Championship
 
-A mobile-first Flutter + Flame arcade racer with a 3D-style perspective road and a full championship progression loop.
+A mobile-first Flutter + Flame arcade racer with a real pseudo-3D road engine (curves, hills, fog, traffic, lap racing) and a full championship progression loop.
+
+## What's new in 2.0
+- **Real road engine:** segment-based 3D road with curves, hills, fog, rumble strips, barriers, lap start/finish gantry and four unique closed-loop circuits.
+- **Real racing:** multi-lap races, race countdown, live position, lap timer and best lap, damage model, wall and car collisions, slipstream and near-miss nitro bonuses.
+- **Real traffic and rivals:** lane-changing traffic, rivals that avoid traffic, take racing lines and rubber-band by difficulty.
+- **Detailed cars:** six procedural car bodies with tail lights, brake lights, exhausts, boost flames, wings and underglow.
+- **Atmosphere:** parallax skylines/mountains, sun/moon/stars, speed lines, FOV kick on nitro, camera shake, tyre smoke, sparks.
+- **Sound:** engine that follows RPM and gears, crash, nitro, countdown and lap sounds (generated `assets/audio/*.wav`).
+- **HUD:** analogue speedometer with RPM arc and gear, nitro and damage bars, position and lap panel.
 
 ## Features
 - **Car garage:** four selectable cars, unlock prices, colour identities and performance stats (top speed, acceleration, handling).
@@ -40,11 +49,11 @@ The online mode needs a deployed WebSocket server. This repository includes a li
 For local testing, use `ws://10.0.2.2:8080` from the Android emulator or your computer's LAN address from a physical phone. Do not use `localhost` on a phone.
 
 ## Controls
-- LEFT / RIGHT: steer
-- GAS: accelerate
+- LEFT / RIGHT: steer (hold). Accelerator is automatic.
 - BRAKE: slow down
-- DRIFT: initiate drift and recharge turbo faster
-- TURBO: hold for a burst of speed
+- DRIFT: hold while steering to slide through corners and recharge nitro
+- NITRO: hold for a burst of speed
+- Keyboard: arrows / A D steer, S brake, Space nitro, Shift drift, P / Esc pause
 
 ## Rendering note
-The game uses Flame for the real-time game loop and Flutter Canvas for a lightweight perspective 3D-style renderer. The scenery and cars are procedural; no external assets or API keys are required.
+The game uses Flame for the real-time game loop and Flutter Canvas for a segment-projection pseudo-3D renderer. Cars, scenery and skies are procedural. Only the small WAV sound files in `assets/audio/` are bundled; no API keys are required.

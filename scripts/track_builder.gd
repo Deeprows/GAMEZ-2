@@ -80,8 +80,8 @@ func _add_road_mesh(parent: Node3D, color: Color) -> void:
 	var indices := PackedInt32Array()
 	for i in range(SAMPLES + 1):
 		var t := TAU * float(i) / SAMPLES
-		var c := _center(t)
-		var n := _normal(t)
+		var c: Vector3 = _center(t)
+		var n: Vector3 = _normal(t)
 		vertices.append(c - n * ROAD_HALF + Vector3.UP * 0.015)
 		vertices.append(c + n * ROAD_HALF + Vector3.UP * 0.015)
 		uvs.append(Vector2(0.0, float(i) / SAMPLES * 36.0))
@@ -127,15 +127,15 @@ func _add_track_edges(parent: Node3D, curb_color: Color, accent: Color) -> void:
 	for side in [-1.0, 1.0]:
 		for i in range(SAMPLES):
 			var t := TAU * float(i) / SAMPLES
-			var c := _center(t) + _normal(t) * side * (ROAD_HALF + 0.25)
-			var next := _center(t + TAU / SAMPLES) + _normal(t + TAU / SAMPLES) * side * (ROAD_HALF + 0.25)
+			var c: Vector3 = _center(t) + _normal(t) * side * (ROAD_HALF + 0.25)
+			var next: Vector3 = _center(t + TAU / SAMPLES) + _normal(t + TAU / SAMPLES) * side * (ROAD_HALF + 0.25)
 			var curb := MeshInstance3D.new()
 			var mesh := BoxMesh.new()
 			mesh.size = Vector3(0.55, 0.12, c.distance_to(next) + 0.03)
 			curb.mesh = mesh
 			curb.material_override = _mat(curb_color if (i / 3) % 2 == 0 else accent, 0.82)
 			curb.position = (c + next) * 0.5 + Vector3.UP * 0.08
-			var d := (next - c).normalized()
+			var d: Vector3 = (next - c).normalized()
 			curb.rotation.y = atan2(d.x, d.z)
 			parent.add_child(curb)
 
@@ -143,15 +143,15 @@ func _add_barriers(parent: Node3D, accent: Color) -> void:
 	for side in [-1.0, 1.0]:
 		for i in range(0, SAMPLES, 2):
 			var t := TAU * float(i) / SAMPLES
-			var c := _center(t) + _normal(t) * side * 7.65 + Vector3.UP * 0.72
-			var nxt := _center(t + TAU * 2.0 / SAMPLES) + _normal(t + TAU * 2.0 / SAMPLES) * side * 7.65 + Vector3.UP * 0.72
+			var c: Vector3 = _center(t) + _normal(t) * side * 7.65 + Vector3.UP * 0.72
+			var nxt: Vector3 = _center(t + TAU * 2.0 / SAMPLES) + _normal(t + TAU * 2.0 / SAMPLES) * side * 7.65 + Vector3.UP * 0.72
 			var rail := MeshInstance3D.new()
 			var box := BoxMesh.new()
 			box.size = Vector3(0.24, 0.7, c.distance_to(nxt) + 0.12)
 			rail.mesh = box
 			rail.material_override = _mat(Color("#d9dde1").lerp(accent, 0.16), 0.38, 0.65)
 			rail.position = (c + nxt) * 0.5
-			var d := (nxt - c).normalized()
+			var d: Vector3 = (nxt - c).normalized()
 			rail.rotation.y = atan2(d.x, d.z)
 			parent.add_child(rail)
 

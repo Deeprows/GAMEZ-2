@@ -1,8 +1,16 @@
-.dart_tool/
-.packages
-.pub/
+# Godot editor and import cache
+.godot/
+.export/
+*.import
+
+# Build output
 build/
-.flutter-plugins
-.flutter-plugins-dependencies
+
+# Node.js server dependencies and local environment
+node_modules/
+.env
+.env.*
+
+# IDE files
 .idea/
 .vscode/

@@ -15,11 +15,15 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.3.0
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install Godot 4.3
+        run: |
+          curl -L --fail --retry 3 -o godot.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip -q godot.zip
+          chmod +x Godot_v4.3-stable_linux.x86_64
+          echo "$PWD" >> "$GITHUB_PATH"
       - name: Validate project import and GDScript
         run: godot --headless --editor --path godot --quit
       - name: Run project in headless mode

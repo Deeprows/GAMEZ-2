@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'multiplayer_client.dart';
 
 enum RaceState { ready, running, paused, crashed, finished }
 enum RaceEnvironment { neonCity, desert, countryside, midnight }
@@ -290,7 +291,7 @@ class RacerGame extends FlameGame {
     super.onRemove();
   }
 
-  dynamic multiplayerClient;
+  RaceMultiplayerClient? multiplayerClient;
 
   void _finishRace({required bool won}) {
     if (state != RaceState.running) return;

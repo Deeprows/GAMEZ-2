@@ -6,6 +6,7 @@ const Catalog = preload("res://scripts/car_catalog.gd")
 var damage := 0.0
 var touch_steer := 0.0
 var touch_brake := false
+var touch_accelerate := false
 var touch_nitro := false
 var touch_drift := false
 var is_boosting := false
@@ -132,9 +133,10 @@ func _add_lights() -> void:
 		lamp.position = Vector3(x, 0.52, 2.04)
 		add_child(lamp)
 
-func set_controls(steer_axis: float, braking: bool, boost: bool, drifting: bool) -> void:
+func set_controls(steer_axis: float, braking: bool, boost: bool, drifting: bool, accelerating: bool) -> void:
 	steering_input = clampf(steer_axis + touch_steer, -1.0, 1.0)
 	brake_input = braking or touch_brake
+	touch_accelerate = accelerating
 	nitro_input = boost or touch_nitro
 	drift_input = drifting or touch_drift
 
@@ -143,8 +145,8 @@ func _physics_process(delta: float) -> void:
 	is_drifting = drift_input and absf(steering_input) > 0.12 and speed_kmh > 25.0
 	is_boosting = nitro_input and not brake_input
 	var forward_speed := -global_transform.basis.z.dot(linear_velocity)
-	var accel := (92.0 if is_boosting else 58.0) * acceleration_multiplier
-	engine_force = accel if forward_speed < (max_forward_speed * (1.18 if is_boosting else 1.0)) else 0.0
+	var accel := (14500.0 if is_boosting else 10500.0) * acceleration_multiplier
+	engine_force = accel if touch_accelerate and forward_speed < (max_forward_speed * (1.18 if is_boosting else 1.0)) else 0.0
 	brake = 48.0 if brake_input else 0.0
 	if is_drifting:
 		for wheel in get_children():

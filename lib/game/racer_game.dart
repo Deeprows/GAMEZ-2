@@ -219,7 +219,7 @@ class RacerGame extends FlameGame {
   void _finishRace({required bool won}) {
     if (state != RaceState.running) return;
     state = won ? RaceState.finished : RaceState.crashed;
-    bestDistance = math.max(bestDistance, distance.round());
+    bestDistance = math.max(bestDistance, distance.round()).toInt();
     lastReward = won ? 120 + level * 30 + (drifting ? 25 : 0) : (distance / 30).floor();
     coins += lastReward;
     if (won) {

@@ -10,7 +10,16 @@ on:
       - 'scenes/**'
       - 'scripts/**'
       - 'assets/**'
-      - '.github/workflows/godot-android-build.yml'
+      - '.github/workflows/build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'project.godot'
+      - 'export_presets.cfg'
+      - 'scenes/**'
+      - 'scripts/**'
+      - 'assets/**'
+      - '.github/workflows/build.yml'
 
 permissions:
   contents: read

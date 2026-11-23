@@ -1,58 +1,53 @@
-# GAMEZ-2 — Neon Velocity 3D (Godot 4 migration branch)
+# GAMEZ-2 — Neon Velocity
 
-This branch adds the Godot 4 3D racing engine from the supplied upgrade ZIPs while keeping the original Flutter + Flame project files in the repository. The `main` branch is unchanged and remains the rollback point.
+Neon Velocity is a mobile-first 3D racing game powered by the Godot 4 engine. The Godot project at the repository root is the primary game and Android app.
 
-## Open the Godot game
+## Game flow
+
+When the app opens, it shows the main championship menu. From there you can:
+
+- Start a race.
+- Choose and unlock cars in the garage.
+- Select Neon City, Desert Run, Green Valley or Midnight Circuit.
+- Choose Free Drive or race against three AI opponents.
+- Set Rookie, Pro or Elite AI difficulty.
+- View career level, wins, coins, best distance and best lap.
+- Connect to the included WebSocket matchmaking server for online 1v1 races.
+
+The 3D engine uses the supplied GLB car models, PBR textures, physics-based vehicle, procedural tracks, touch controls, nitro, drift, AI rivals and persistent career progress.
+
+## Android
+
+- Landscape orientation is forced for Android.
+- Package: `com.deeprows.gamez2`
+- App name: `Neon Velocity`
+- One GitHub Actions workflow builds the Android APK: **Build Android APK**.
+- The workflow uploads one artifact named `neon-velocity-apk`.
+
+To download the APK, open the successful **Build Android APK** run in GitHub Actions, then download the `neon-velocity-apk` artifact and extract the APK from the ZIP.
+
+## Build locally
 
 1. Install Godot 4.3 or newer.
-2. Open the repository root (the folder containing `project.godot`) in Godot Project Manager.
-3. Allow Godot to scan and import the project, then run `scenes/main.tscn` (F6) or the project (F5).
-4. The project uses the Compatibility renderer for broader mobile GPU support.
+2. Install the matching Android export templates.
+3. Configure the Android SDK and JDK in Godot Editor Settings.
+4. Open this repository root in Godot.
+5. Select the Android export preset and export the project.
 
-## Engine work included
+The automated GitHub workflow performs the Android SDK setup, imports the project and creates a debug APK.
 
-- Physics-driven 3D player vehicle using `VehicleBody3D` and four `VehicleWheel3D` wheels.
-- Procedurally generated closed-loop 3D circuit, collision geometry, lane markings, curbs, barriers and scenery.
-- Four environment themes: Neon City, Desert Run, Green Valley and Midnight Circuit.
-- Mobile touch steering, brake, drift and nitro HUD; desktop keyboard controls.
-- Four-car garage catalogue, local career persistence, race rewards and collision damage.
-- Three AI opponents with Rookie / Pro / Elite difficulty, lane changes and overtake behavior.
-- WebSocket client using the existing join/state/finish/leave message protocol.
+## Online multiplayer
 
-## Controls
+The Node.js matchmaking relay remains in `server/`. Deploy the included service (Render blueprint: `render.yaml`) and enter its secure WebSocket URL (`wss://...`) in **Race Modes → Online Multiplayer**. Two clients must connect to the same server to be paired. The server relays player progress and does not store accounts or rankings.
 
-- A / Left and D / Right: steer
-- S / Down: brake
-- Space: nitro
-- Shift: drift
-- Escape: pause
-- Touchscreen: on-screen steering, brake, drift and nitro buttons
+## Validation
 
-## Supplied assets
+The separate **Godot 4 project validation** workflow verifies the supplied car and texture assets, imports the project, parses GDScript and performs a headless startup smoke test. A successful headless check is not a substitute for testing the Android APK on a physical phone.
 
-All 20 binary assets from the supplied upgrade ZIP are present on this branch:
-- 4 GLB car models in `assets/cars/`
-- 16 PBR PNG maps (albedo, roughness, normal and AO for asphalt, concrete, grass and sand) in `assets/textures/`
+## Repository contents
 
-See [assets/README.md](assets/README.md) for the exact inventory. Procedural car and material fallbacks remain if an optional asset cannot be loaded.
-
-## Multiplayer server
-
-The original Node.js server remains under `server/`. Set the multiplayer WebSocket URL in the game before connecting. The Godot client uses the same basic `join`, `state`, `finish` and `leave` message types. A real two-device connection test is still required.
-
-## Android export
-
-Android export has not yet been configured or tested. In Godot, install the matching export templates, configure the Android SDK and JDK in Editor Settings, add an Android export preset, and create a debug APK. Test that APK on a physical Android device in landscape mode before preparing a release. Never commit signing keys.
-
-## Validation status
-
-The GitHub Actions workflow `.github/workflows/godot-validation.yml` has passed:
-- Verified the expected 4 GLB and 16 PNG assets.
-- Imported the project in headless Godot 4.3 and validated GDScript parsing.
-- Completed a headless game startup smoke test.
-
-These checks do not replace desktop gameplay or physical Android testing. Vehicle handling, camera behavior, touch controls, garage interaction, AI behavior, multiplayer connectivity, mobile performance and Android export still require hands-on testing. Keep the pull request unmerged until those checks are completed.
-
-## Original Flutter project
-
-The Flutter + Flame source remains available in the same repository tree. This migration adds a Godot project at the repository root; it does not replace the original implementation on `main`.
+- `project.godot`, `scenes/`, `scripts/`: primary Godot 3D game.
+- `assets/cars/`, `assets/textures/`, `assets/audio/`: game assets.
+- `server/`, `render.yaml`, `package.json`: online matchmaking service.
+- `.github/workflows/build.yml`: the single Android APK build.
+- `.github/workflows/godot-validation.yml`: project validation only.

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../game/racer_game.dart';
+import '../game/multiplayer_client.dart';
 
 const _cyan = Color(0xFF00E5FF);
 const _panel = Color(0xEE10182B);
@@ -101,6 +102,7 @@ class StartOverlay extends StatelessWidget {
         case MenuPage.garage: return _garage(context);
         case MenuPage.environments: return _environments(context);
         case MenuPage.career: return _career(context);
+        case MenuPage.modes: return _modes(context);
         case MenuPage.home: return _home(context);
       }
     },
@@ -139,7 +141,7 @@ class StartOverlay extends StatelessWidget {
         _pill(Icons.emoji_events, 'LEVEL ${game.level}', _cyan),
       ]),
       const SizedBox(height: 26),
-      _bigButton('START CHAMPIONSHIP', Icons.flag_rounded, game.startRace),
+      _bigButton('CHOOSE RACE MODE', Icons.flag_rounded, () => game.showPage(MenuPage.modes)),
       const SizedBox(height: 10),
       Row(children: [
         Expanded(child: _menuButton('GARAGE', Icons.directions_car, () => game.showPage(MenuPage.garage))),
@@ -162,11 +164,11 @@ class StartOverlay extends StatelessWidget {
     child: ListView(children: [
       const Text('CHOOSE YOUR MACHINE', style: TextStyle(color: Colors.white60, fontSize: 10, letterSpacing: 2)),
       const SizedBox(height: 12),
-      for (final car in raceCars) _carCard(car),
+      for (final car in raceCars) _carCard(car, context),
     ]),
   );
 
-  Widget _carCard(RaceCar car) {
+  Widget _carCard(RaceCar car, BuildContext context) {
     final owned = game.unlockedCars.contains(car.id);
     final selected = game.selectedCarId == car.id;
     return Container(
@@ -251,6 +253,67 @@ class StartOverlay extends StatelessWidget {
       ),
     );
   }
+
+
+  Widget _modes(BuildContext context) => _shell(
+    title: 'SELECT RACE MODE',
+    child: ListView(children: [
+      const Text('PICK YOUR CHALLENGE', style: TextStyle(color: Colors.white60, fontSize: 10, letterSpacing: 2)),
+      const SizedBox(height: 14),
+      _modeCard('FREE DRIVE', 'Practice the road, master the drift and test your car.', Icons.route_rounded, _cyan,
+        () { game.chooseRaceMode(RaceMode.solo); game.startRace(); }),
+      _modeCard('PLAYER VS COMPUTER', 'Race three AI drivers. Choose how aggressive they are.', Icons.smart_toy_rounded, const Color(0xFFFFB547),
+        () => _showAiDifficulty(context)),
+      _modeCard('ONLINE MULTIPLAYER', 'Join matchmaking and race another real player.', Icons.public_rounded, const Color(0xFFB66BFF),
+        () => game.overlays.add('onlineLobby')),
+      const SizedBox(height: 12),
+      Text('AI DIFFICULTY: ${game.aiDifficulty.name.toUpperCase()}', style: const TextStyle(color: Colors.white60, fontSize: 10, letterSpacing: 1.5)),
+      const SizedBox(height: 8),
+      Wrap(spacing: 8, children: [
+        for (final difficulty in AiDifficulty.values)
+          ChoiceChip(label: Text(difficulty.name.toUpperCase()),
+            selected: game.aiDifficulty == difficulty,
+            onSelected: (_) => game.chooseDifficulty(difficulty)),
+      ]),
+      const SizedBox(height: 10),
+      _bigButton('RACE AGAINST AI', Icons.flag_rounded, () {
+        game.chooseRaceMode(RaceMode.versusComputer);
+        game.startRace();
+      }),
+    ]),
+  );
+
+  void _showAiDifficulty(BuildContext context) {
+    showModalBottomSheet<void>(context: context, backgroundColor: const Color(0xFF10182B), builder: (sheetContext) => Padding(
+      padding: const EdgeInsets.all(22),
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        const Text('CHOOSE AI DIFFICULTY', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+        const SizedBox(height: 12),
+        for (final difficulty in AiDifficulty.values)
+          ListTile(title: Text(difficulty.name.toUpperCase()),
+            subtitle: Text(switch (difficulty) { AiDifficulty.rookie => 'Relaxed rivals — learn the track.', AiDifficulty.pro => 'Balanced, competitive opponents.', AiDifficulty.elite => 'Fast and aggressive racing line.' }),
+            trailing: game.aiDifficulty == difficulty ? const Icon(Icons.check_circle, color: _cyan) : null,
+            onTap: () { game.chooseDifficulty(difficulty); Navigator.pop(sheetContext); game.chooseRaceMode(RaceMode.versusComputer); game.startRace(); }),
+      ]),
+    ));
+  }
+
+  Widget _modeCard(String title, String subtitle, IconData icon, Color color, VoidCallback onTap) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(18), child: Container(
+      padding: const EdgeInsets.all(17),
+      decoration: BoxDecoration(color: color.withOpacity(.10), borderRadius: BorderRadius.circular(18), border: Border.all(color: color.withOpacity(.55))),
+      child: Row(children: [
+        Icon(icon, color: color, size: 32), const SizedBox(width: 14),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: .7)),
+          const SizedBox(height: 5),
+          Text(subtitle, style: const TextStyle(fontSize: 10, color: Colors.white60)),
+        ])),
+        Icon(Icons.chevron_right_rounded, color: color),
+      ]),
+    )),
+  );
 
   Widget _career(BuildContext context) => _shell(
     title: 'CAREER & REWARDS',

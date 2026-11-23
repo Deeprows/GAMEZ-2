@@ -26,15 +26,15 @@ class StartOverlay extends StatelessWidget {
 
   Widget _shell({required String title, required Widget child, String? trailing}) => Container(
     color: const Color(0xE8070B16),
-    padding: const EdgeInsets.fromLTRB(20, 24, 20, 18),
+    padding: const EdgeInsets.fromLTRB(10, 5, 10, 6),
     child: SafeArea(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
         IconButton(onPressed: () => game.showPage(MenuPage.home), icon: const Icon(Icons.arrow_back_rounded)),
         const SizedBox(width: 6),
-        Expanded(child: Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w900, letterSpacing: 1.4))),
+        Expanded(child: Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
         if (trailing != null) Text(trailing, style: const TextStyle(color: Color(0xFFFFD447), fontWeight: FontWeight.bold)),
       ]),
-      const SizedBox(height: 14),
+      const SizedBox(height: 3),
       Expanded(child: child),
     ])),
   );
@@ -80,12 +80,33 @@ class StartOverlay extends StatelessWidget {
   Widget _garage(BuildContext context) => _shell(
     title: 'CAR GARAGE',
     trailing: '🪙 ${game.coins}',
-    child: ListView(children: [
-      const Text('CHOOSE YOUR MACHINE', style: TextStyle(color: Colors.white60, fontSize: 10, letterSpacing: 2)),
-      const SizedBox(height: 12),
-      for (final car in raceCars) _carCard(car, context),
-    ]),
+    child: GridView.builder(
+      padding: const EdgeInsets.only(top: 4, bottom: 4), physics: const NeverScrollableScrollPhysics(),
+      itemCount: raceCars.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 8, mainAxisSpacing: 7, childAspectRatio: 2.45),
+      itemBuilder: (context, index) => _compactCarCard(raceCars[index]),
+    ),
   );
+
+  Widget _compactCarCard(RaceCar car) {
+    final owned = game.unlockedCars.contains(car.id);
+    final selected = game.selectedCarId == car.id;
+    return Container(padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(color: _panel, borderRadius: BorderRadius.circular(13), border: Border.all(color: selected ? car.color : Colors.white12, width: selected ? 2 : 1)),
+      child: Row(children: [
+        Icon(Icons.directions_car_filled_rounded, color: car.color, size: 30), const SizedBox(width: 7),
+        Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(car.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+          Text(car.topKmh.toString() + ' km/h • 0-100 ' + car.zeroTo100 + 's', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 8, color: Colors.white60)),
+          const SizedBox(height: 3), _statBar('SPEED', car.topSpeed, car.color), _statBar('ACCEL', car.acceleration, car.color), _statBar('GRIP', car.handling, car.color),
+        ])), const SizedBox(width: 5),
+        SizedBox(width: 62, height: 32, child: FilledButton(
+          onPressed: selected ? null : () { final ok = game.buyOrSelectCar(car); if (!ok) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Not enough coins yet. Win races to earn more!'))); },
+          style: FilledButton.styleFrom(backgroundColor: car.color, foregroundColor: Colors.black, padding: EdgeInsets.zero, minimumSize: Size.zero),
+          child: Text(selected ? 'SET' : owned ? 'SELECT' : car.price.toString() + ' 🪙', maxLines: 1, style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900)),
+        )),
+      ]));
+  }
 
   Widget _carCard(RaceCar car, BuildContext context) {
     final owned = game.unlockedCars.contains(car.id);
@@ -130,13 +151,28 @@ class StartOverlay extends StatelessWidget {
 
   Widget _environments(BuildContext context) => _shell(
     title: 'SELECT TRACK',
-    child: ListView(children: [
-      const Text('FOUR WORLDS. ONE CHAMPION.', style: TextStyle(color: Colors.white60, fontSize: 10, letterSpacing: 2)),
-      const SizedBox(height: 14),
-      for (final env in RaceEnvironment.values)
-        _trackCard(env),
-    ]),
+    child: GridView.builder(
+      padding: const EdgeInsets.only(top: 4, bottom: 4), physics: const NeverScrollableScrollPhysics(),
+      itemCount: RaceEnvironment.values.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 8, mainAxisSpacing: 7, childAspectRatio: 3.1),
+      itemBuilder: (context, index) => _compactTrackCard(RaceEnvironment.values[index]),
+    ),
   );
+
+  Widget _compactTrackCard(RaceEnvironment env) {
+    final selected = game.environment == env;
+    final color = switch (env) { RaceEnvironment.neonCity => _cyan, RaceEnvironment.desert => const Color(0xFFFFC06B), RaceEnvironment.countryside => const Color(0xFF9BEB91), RaceEnvironment.midnight => const Color(0xFF9D83FF) };
+    final icon = switch (env) { RaceEnvironment.neonCity => Icons.location_city, RaceEnvironment.desert => Icons.wb_sunny, RaceEnvironment.countryside => Icons.forest, RaceEnvironment.midnight => Icons.nightlight_round };
+    return InkWell(onTap: () => game.chooseEnvironment(env), borderRadius: BorderRadius.circular(13),
+      child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(13), color: color.withOpacity(.12), border: Border.all(color: selected ? color : Colors.white12, width: selected ? 2 : 1)),
+        child: Row(children: [Icon(icon, color: color, size: 24), const SizedBox(width: 9),
+          Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(_environmentName(env), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+            Text(_environmentDescription(env), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 8, color: Colors.white60)),
+          ])), if (selected) Icon(Icons.check_circle, color: color, size: 17),
+        ])));
+  }
 
   Widget _trackCard(RaceEnvironment env) {
     final selected = game.environment == env;

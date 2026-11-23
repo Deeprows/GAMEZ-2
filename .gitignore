@@ -6,3 +6,8 @@ build/
 .flutter-plugins-dependencies
 .idea/
 .vscode/
+
+# Godot generated files
+.godot/
+.export/
+*.import

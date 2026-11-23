@@ -38,6 +38,10 @@ class RaceMultiplayerClient {
     }));
   }
 
+  void sendFinish() {
+    _channel.sink.add(jsonEncode({'type': 'finish'}));
+  }
+
   void leave() {
     _channel.sink.add(jsonEncode({'type': 'leave'}));
     close();
